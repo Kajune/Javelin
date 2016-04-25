@@ -1,22 +1,22 @@
-#include "JDepthStencil.h"
+#include "JDepthStencilState.h"
 #include "JUtility.h"
 #include "JApplication.h"
 
 using namespace Javelin;
 
-CDepthSteincilState::CDepthSteincilState() noexcept :
+CDepthStencilState::CDepthStencilState() noexcept :
 m_pDepthSteincilState(nullptr) {
 }
 
-CDepthSteincilState::~CDepthSteincilState() noexcept {
+CDepthStencilState::~CDepthStencilState() noexcept {
 	Cleanup();
 }
 
-CDepthSteincilState::CDepthSteincilState(const CDepthSteincilState& DepthSteincilState) {
+CDepthStencilState::CDepthStencilState(const CDepthStencilState& DepthSteincilState) {
 	operator=(DepthSteincilState);
 }
 
-CDepthSteincilState& CDepthSteincilState::operator=(const CDepthSteincilState& DepthSteincilState) {
+CDepthStencilState& CDepthStencilState::operator=(const CDepthStencilState& DepthSteincilState) {
 	if (this == &DepthSteincilState) {
 		return *this;
 	}
@@ -24,11 +24,11 @@ CDepthSteincilState& CDepthSteincilState::operator=(const CDepthSteincilState& D
 	return *this;
 }
 
-CDepthSteincilState::CDepthSteincilState(CDepthSteincilState&& DepthSteincilState) {
+CDepthStencilState::CDepthStencilState(CDepthStencilState&& DepthSteincilState) {
 	operator=(std::move(DepthSteincilState));
 }
 
-CDepthSteincilState& CDepthSteincilState::operator=(CDepthSteincilState&& DepthSteincilState) {
+CDepthStencilState& CDepthStencilState::operator=(CDepthStencilState&& DepthSteincilState) {
 	if (this == &DepthSteincilState) {
 		return *this;
 	}
@@ -37,7 +37,7 @@ CDepthSteincilState& CDepthSteincilState::operator=(CDepthSteincilState&& DepthS
 	return *this;
 }
 
-void CDepthSteincilState::Initialize(const D3D11_DEPTH_STENCIL_DESC& rsDesc) {
+void CDepthStencilState::Initialize(const D3D11_DEPTH_STENCIL_DESC& rsDesc) {
 	Cleanup();
 
 	m_DepthSteincilDesc = rsDesc;
@@ -52,7 +52,7 @@ void CDepthSteincilState::Initialize(const D3D11_DEPTH_STENCIL_DESC& rsDesc) {
 	}
 }
 
-void CDepthSteincilState::Cleanup() noexcept {
+void CDepthStencilState::Cleanup() noexcept {
 	SAFE_RELEASE(m_pDepthSteincilState);
 }
 

@@ -72,12 +72,13 @@ namespace Javelin {
 
 		static ID3D11RenderTargetView*	m_pRenderTargetView;
 		static CDepthStencil			m_depthStencil;
-		static CDepthSteincilState		m_depthStencilState;
+		static CDepthStencilState		m_depthStencilState;
 		static CRasterizerState			m_rasterizerState;
 		static CViewport				m_viewport;
 		static CPipeline				m_pipeline;
 
 		static bool m_isSingleThreaded;
+		static bool m_use3D;
 		static float m_fps;
 		static float m_averageFps;
 		static bool m_isWindowSizeChanged;
@@ -118,8 +119,14 @@ namespace Javelin {
 
 		//初期化前設定
 		//シングルスレッドで動かすかどうかを決定する。シングルスレッドの場合多少パフォーマンスが向上する。
+		//初期値はfalse
 		static void SetIsSingleThreaded(bool isSingleThreaded) noexcept {
 			m_isSingleThreaded = isSingleThreaded;
+		}
+		//3D機能を使用するかどうかを決定する。
+		//初期値はtrue
+		static void SetUse3D(bool use3D) noexcept {
+			m_use3D = use3D;
 		}
 
 		//パイプライン関係
@@ -127,11 +134,17 @@ namespace Javelin {
 		static HRESULT Present(UINT vSyncInterval = 1);
 		static void ClearScreen(const COLOR& color = COLOR(),
 			bool clearDepth = true, bool clearStencil = true);
-		static HRESULT SetDefaultRenderTarget();
-		static HRESULT SetDefaultDepthStencil();
-		static HRESULT SetDefaultDepthStencilState();
-		static HRESULT SetDefaultRasterizerState();
-		static HRESULT SetDefaultViewport();
+		static void SetDefaultRenderTarget(bool setDepthStencil);
+		static void SetDefaultRenderTarget(const CPipeline& pipeline, bool setDepthStencil);
+		static void SetDefaultDepthStencilState();
+		static void SetDefaultDepthStencilState(const CPipeline& pipeline);
+		static void SetDefaultRasterizerState();
+		static void SetDefaultRasterizerState(const CPipeline& pipeline);
+		static void SetDefaultViewport();
+		static void SetDefaultViewport(const CPipeline& pipeline);
+		static const CPipeline& GetDefaultPipeline() {
+			return m_pipeline;
+		}
 
 		//デバイス関係
 		//デバイスを取得する。

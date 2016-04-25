@@ -4,22 +4,22 @@
 
 namespace Javelin {
 
-	class CDepthSteincilState : public CResource {
+	class CDepthStencilState : public CResource {
 	protected:
 		ID3D11DepthStencilState*	m_pDepthSteincilState;
 		D3D11_DEPTH_STENCIL_DESC	m_DepthSteincilDesc;
 	public:
-		CDepthSteincilState() noexcept;
-		virtual ~CDepthSteincilState() noexcept;
-		CDepthSteincilState(const CDepthSteincilState&);
-		CDepthSteincilState& operator=(const CDepthSteincilState&);
-		CDepthSteincilState(CDepthSteincilState&&);
-		CDepthSteincilState& operator=(CDepthSteincilState&&);
+		CDepthStencilState() noexcept;
+		virtual ~CDepthStencilState() noexcept;
+		CDepthStencilState(const CDepthStencilState&);
+		CDepthStencilState& operator=(const CDepthStencilState&);
+		CDepthStencilState(CDepthStencilState&&);
+		CDepthStencilState& operator=(CDepthStencilState&&);
 
 		void Initialize(const D3D11_DEPTH_STENCIL_DESC& rsDesc);
 		void Cleanup() noexcept;
 
-		ID3D11DepthStencilState* GetDepthSteincilState() const noexcept {
+		ID3D11DepthStencilState* GetDepthStencilState() const noexcept {
 			return m_pDepthSteincilState;
 		}
 	};

@@ -46,7 +46,7 @@ CBuffer& CBuffer::operator=(const CBuffer& buffer) {
 }
 
 CBuffer::CBuffer(CBuffer&& buffer) {
-	operator=(buffer);
+	operator=(std::move(buffer));
 }
 
 CBuffer& CBuffer::operator=(CBuffer&& buffer) {

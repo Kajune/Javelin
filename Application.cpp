@@ -7,7 +7,7 @@ using namespace Javelin;
 
 ID3D11RenderTargetView*	Application::m_pRenderTargetView = nullptr;
 CDepthStencil Application::m_depthStencil;
-CDepthSteincilState Application::m_depthStencilState;
+CDepthStencilState Application::m_depthStencilState;
 CRasterizerState Application::m_rasterizerState;
 CViewport Application::m_viewport;
 CPipeline Application::m_pipeline;
@@ -16,6 +16,7 @@ Application::CWindow Application::m_window;
 Application::CDevice Application::m_device;
 bool Application::m_isSingleThreaded = false;
 bool Application::m_isWindowSizeChanged = true;
+bool Application::m_use3D = true;
 float Application::m_fps = 0.0f;
 float Application::m_averageFps = 0.0f;
 #if defined(DEBUG) || defined(_DEBUG)
@@ -160,29 +161,44 @@ HRESULT Application::Present(UINT vSyncInterval) {
 
 void Application::ClearScreen(const COLOR& color, bool clearDepth, bool clearStencil) {
 	m_device.GetImmediateContext()->ClearRenderTargetView(m_pRenderTargetView, color.ary.rgba);
-	UINT clearFlag = (clearDepth ? D3D11_CLEAR_DEPTH : 0) | (clearStencil ? D3D11_CLEAR_STENCIL : 0);
-	m_device.GetImmediateContext()->ClearDepthStencilView(m_depthStencil.GetDepthStencilView(),
+	if (m_use3D) {
+		UINT clearFlag = (clearDepth ? D3D11_CLEAR_DEPTH : 0) | (clearStencil ? D3D11_CLEAR_STENCIL : 0);
+		m_device.GetImmediateContext()->ClearDepthStencilView(m_depthStencil.GetDepthStencilView(),
 			clearFlag, 1.0f, 0);
+	}
 }
 
-HRESULT Application::SetDefaultRenderTarget() {
-	return S_OK;
+void Application::SetDefaultRenderTarget(bool setDepthStencil) {
+	SetDefaultRenderTarget(m_pipeline, setDepthStencil);
 }
 
-HRESULT Application::SetDefaultDepthStencil() {
-	return S_OK;
+void Application::SetDefaultRenderTarget(const CPipeline& pipeline, bool setDepthStencil) {
+	pipeline.SetRenderTarget(1, &m_pRenderTargetView, setDepthStencil ? &m_depthStencil : nullptr);
 }
 
-HRESULT Application::SetDefaultDepthStencilState() {
-	return S_OK;
+void Application::SetDefaultDepthStencilState() {
+	SetDefaultDepthStencilState(m_pipeline);
 }
 
-HRESULT Application::SetDefaultRasterizerState() {
-	return S_OK;
+void Application::SetDefaultDepthStencilState(const CPipeline& pipeline) {
+	pipeline.SetDepthStencilState(&m_depthStencilState, 0);
 }
 
-HRESULT Application::SetDefaultViewport() {
-	return S_OK;
+void Application::SetDefaultRasterizerState() {
+	SetDefaultRasterizerState(m_pipeline);
+}
+
+void Application::SetDefaultRasterizerState(const CPipeline& pipeline) {
+	pipeline.SetRasterizerState(&m_rasterizerState);
+}
+
+void Application::SetDefaultViewport() {
+	SetDefaultViewport(m_pipeline);
+}
+
+void Application::SetDefaultViewport(const CPipeline& pipeline) {
+	const CViewport* vp[] = { &m_viewport };
+	pipeline.SetViewports(1, vp);
 }
 
 //
@@ -223,7 +239,7 @@ void Application::InitDirect3D() {
 	rsDesc.DepthBias = 0;
 	rsDesc.DepthBiasClamp = 0.0f;
 	rsDesc.SlopeScaledDepthBias = 0.0f;
-	rsDesc.DepthClipEnable = true;
+	rsDesc.DepthClipEnable = m_use3D;
 	rsDesc.ScissorEnable = false;
 	rsDesc.MultisampleEnable = false;
 	rsDesc.AntialiasedLineEnable = false;
@@ -231,7 +247,7 @@ void Application::InitDirect3D() {
 
 	WriteLog("デプスステンシルステートの作成");
 	D3D11_DEPTH_STENCIL_DESC dsDesc;
-	dsDesc.DepthEnable = true;
+	dsDesc.DepthEnable = m_use3D;
 	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
 	dsDesc.StencilEnable = false;
@@ -269,14 +285,21 @@ void Application::InitBackBuffer() {
 		throw - 1;
 	}
 
-	WriteLog("デプスステンシルビューの作成");
-	m_depthStencil.Initialize(descBackBuffer.Width, descBackBuffer.Height);
+	if (m_use3D) {
+		WriteLog("デプスステンシルビューの作成");
+		m_depthStencil.Initialize(descBackBuffer.Width, descBackBuffer.Height);
+	}
 
 	WriteLog("ビューポートの設定");
 	m_viewport.Initialize(descBackBuffer.Width, descBackBuffer.Height);
 
 	WriteLog("パイプラインの設定");
 	m_pipeline.Initialize(GetImmediateContext());
+
+	SetDefaultRenderTarget(m_use3D);
+	SetDefaultDepthStencilState();
+	SetDefaultRasterizerState();
+	SetDefaultViewport();
 }
 
 
