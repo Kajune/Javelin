@@ -5,6 +5,7 @@
 #include "JRasterizerState.h"
 #include "JDepthStencilState.h"
 #include "JPipeline.h"
+#include "JBlendState.h"
 #include <fstream>
 #include <memory>
 
@@ -75,10 +76,13 @@ namespace Javelin {
 		static CDepthStencilState		m_depthStencilState;
 		static CRasterizerState			m_rasterizerState;
 		static CViewport				m_viewport;
+		static CBlendState				m_blendState;
 		static CPipeline				m_pipeline;
 
 		static bool m_isSingleThreaded;
 		static bool m_use3D;
+		static bool m_useAntialias;
+
 		static float m_fps;
 		static float m_averageFps;
 		static bool m_isWindowSizeChanged;
@@ -128,6 +132,11 @@ namespace Javelin {
 		static void SetUse3D(bool use3D) noexcept {
 			m_use3D = use3D;
 		}
+		//アンチエイリアスを使用するかどうかを決定する。
+		//初期値はfalse
+		static void SetUseAntialias(bool useAntialias) noexcept {
+			m_useAntialias = useAntialias;
+		}
 
 		//パイプライン関係
 		//バックバッファとフロントバッファを入れ替える、指定された回数だけ垂直同期を待機する。
@@ -142,9 +151,15 @@ namespace Javelin {
 		static void SetDefaultRasterizerState(const CPipeline& pipeline);
 		static void SetDefaultViewport();
 		static void SetDefaultViewport(const CPipeline& pipeline);
+		static void SetDefaultBlendState(const COLOR& blendFactor = COLOR(0.0f, 0.0f, 0.0f, 0.0f), 
+			UINT sampleMask = 0xffffff);
+		static void SetDefaultBlendState(const CPipeline& pipeline, 
+			const COLOR& blendFactor = COLOR(0.0f, 0.0f, 0.0f, 0.0f), UINT sampleMask = 0xffffff);
 		static const CPipeline& GetDefaultPipeline() {
 			return m_pipeline;
 		}
+
+		static void SetCullMode(D3D11_CULL_MODE mode);
 
 		//デバイス関係
 		//デバイスを取得する。

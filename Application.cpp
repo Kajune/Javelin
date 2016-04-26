@@ -10,6 +10,7 @@ CDepthStencil Application::m_depthStencil;
 CDepthStencilState Application::m_depthStencilState;
 CRasterizerState Application::m_rasterizerState;
 CViewport Application::m_viewport;
+CBlendState Application::m_blendState;
 CPipeline Application::m_pipeline;
 
 Application::CWindow Application::m_window;
@@ -17,6 +18,7 @@ Application::CDevice Application::m_device;
 bool Application::m_isSingleThreaded = false;
 bool Application::m_isWindowSizeChanged = true;
 bool Application::m_use3D = true;
+bool Application::m_useAntialias = false;
 float Application::m_fps = 0.0f;
 float Application::m_averageFps = 0.0f;
 #if defined(DEBUG) || defined(_DEBUG)
@@ -101,6 +103,7 @@ int Application::MainLoop() noexcept {
 
 void Application::Cleanup() noexcept {
 	WriteLog("平均FPSは" + std::to_string(m_averageFps) + "でした");
+	m_blendState.Cleanup();
 	m_depthStencilState.Cleanup();
 	m_rasterizerState.Cleanup();
 	CleanupDirect3D();
@@ -201,6 +204,19 @@ void Application::SetDefaultViewport(const CPipeline& pipeline) {
 	pipeline.SetViewports(1, vp);
 }
 
+void Application::SetDefaultBlendState(const COLOR& blendFactor, UINT sampleMask) {
+	SetDefaultBlendState(m_pipeline, blendFactor, sampleMask);
+}
+
+void Application::SetDefaultBlendState(const CPipeline& pipeline, const COLOR& blendFactor, UINT sampleMask) {
+	pipeline.SetBlendState(&m_blendState, blendFactor, sampleMask);
+}
+
+void Application::SetCullMode(D3D11_CULL_MODE mode) {
+	m_rasterizerState.GetRasterizerDesc().CullMode = mode;
+	m_rasterizerState.ApplyChange();
+}
+
 //
 //　デバイス関係
 //
@@ -242,7 +258,7 @@ void Application::InitDirect3D() {
 	rsDesc.DepthClipEnable = m_use3D;
 	rsDesc.ScissorEnable = false;
 	rsDesc.MultisampleEnable = false;
-	rsDesc.AntialiasedLineEnable = false;
+	rsDesc.AntialiasedLineEnable = m_useAntialias;
 	m_rasterizerState.Initialize(rsDesc);
 
 	WriteLog("デプスステンシルステートの作成");
@@ -300,6 +316,7 @@ void Application::InitBackBuffer() {
 	SetDefaultDepthStencilState();
 	SetDefaultRasterizerState();
 	SetDefaultViewport();
+	SetDefaultBlendState();
 }
 
 

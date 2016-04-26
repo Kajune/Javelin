@@ -6,6 +6,8 @@
 
 namespace Javelin {
 
+	class CInputLayout;
+
 	class CVertexShader;
 	class CHullShader;
 	class CDomainShader;
@@ -19,6 +21,7 @@ namespace Javelin {
 	class CRenderTarget;
 	class CDepthStencil;
 	class CDepthStencilState;
+	class CBlendState;
 
 	class CPipeline final {
 		std::shared_ptr<ID3D11DeviceContext> m_pDeviceContext;
@@ -30,35 +33,53 @@ namespace Javelin {
 
 		//IA
 		template <typename VertexType>
-		void SetVertexBuffer(UINT startSlot, UINT bufferNum, const CVertexBuffer<VertexType>* pBuffer[], 
+		void SetVertexBuffer(UINT startSlot, UINT bufferNum, const CVertexBuffer<VertexType>* ppBuffer[], 
 			const UINT* pStrides, const UINT* pOffsets) const;
-		void SetIndexBuffer(const CIndexBuffer& indexBuffer, UINT offset) const;
+		void SetIndexBuffer(const CIndexBuffer* pIndexBuffer, UINT offset) const;
+		void SetInputLayout(const CInputLayout* pInputLayout) const;
+		void SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY topology) const;
 
 		//VS
-		void SetVertexShader(const CVertexShader& shader);
+		void SetVertexShader(const CVertexShader* pShader) const;
 
 		//HS
+		void SetHullShader(const CHullShader* pShader) const;
 
 		//DS
+		void SetDomainShader(const CDomainShader* pShader) const;
 
 		//GS
+		void SetGeometryShader(const CGeometryShader* pShader) const;
 
 		//CS
+		void SetComputeShader(const CComputeShader* pShader) const;
 
 		//SO
 
 		//RS
-		void SetRasterizerState(const CRasterizerState* rasterizerState) const;
-		void SetViewports(UINT numViewports, const CViewport* viewports[]) const;
+		void SetRasterizerState(const CRasterizerState* pRasterizerState) const;
+		void SetViewports(UINT numViewports, const CViewport* ppViewports[]) const;
 
 		//PS
+		void SetPixelShader(const CPixelShader* pShader) const;
 
 		//OM
-		void SetRenderTarget(UINT numRenderTargets, const CRenderTarget* renderTarget[], 
+		void SetRenderTarget(UINT numRenderTargets, const CRenderTarget* ppRenderTarget[], 
 			const CDepthStencil* depthStencil) const;
-		void SetRenderTarget(UINT numRenderTargets, ID3D11RenderTargetView* renderTarget[],
+		void SetRenderTarget(UINT numRenderTargets, ID3D11RenderTargetView* ppRenderTarget[],
 			const CDepthStencil* depthStencil) const;
 		void SetDepthStencilState(const CDepthStencilState* depthStencilState, UINT stencilRef) const;
+		void SetBlendState(const CBlendState* pBlendState, 
+			const COLOR& blendFactor = COLOR(0.0f, 0.0f, 0.0f, 0.0f), UINT sampleMask = 0xffffff) const;
+
+		//•`‰æ
+		void Draw(UINT numVertex, UINT startVertex = 0) const;
+		void DrawIndexed(UINT numIndex, UINT startIndex = 0, int baseVertex = 0) const;
+		void DrawInstanced(UINT numVertexPerInstance, UINT numInstance,
+						UINT startVertex = 0, UINT startInstance = 0) const;
+		void DrawIndexedInstanced(UINT numIndexPerInstance, UINT numInstance,
+			UINT startIndex = 0, int baseVertex = 0, UINT startInstance = 0) const;
+		void DrawAuto() const;
 	};
 
 	template <typename VertexType>

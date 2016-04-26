@@ -32,6 +32,7 @@ CRasterizerState& CRasterizerState::operator=(CRasterizerState&& rasterizerState
 	if (this == &rasterizerState) {
 		return *this;
 	}
+	Cleanup();
 	m_pRasterizerState = rasterizerState.m_pRasterizerState;
 	m_rasterizerDesc = rasterizerState.m_rasterizerDesc;
 	return *this;
@@ -50,6 +51,10 @@ void CRasterizerState::Initialize(const D3D11_RASTERIZER_DESC& rsDesc) {
 		Application::WriteLog("デバイスが見つかりませんでした");
 		throw - 1;
 	}
+}
+
+void CRasterizerState::ApplyChange() {
+	Initialize(m_rasterizerDesc);
 }
 
 void CRasterizerState::Cleanup() noexcept {

@@ -1,11 +1,14 @@
 #include "JPipeline.h"
 #include <vector>
+#include <limits>
 #include "JApplication.h"
 #include "JRenderTarget.h"
 #include "JDepthStencil.h"
 #include "JDepthStencilState.h"
 #include "JRasterizerState.h"
 #include "JShader.h"
+#include "JInputLayout.h"
+#include "JBlendState.h"
 
 using namespace Javelin;
 
@@ -17,23 +20,78 @@ void CPipeline::Initialize(std::shared_ptr<ID3D11DeviceContext> pDeviceContext) 
 	m_pDeviceContext = pDeviceContext;
 }
 
-void CPipeline::SetIndexBuffer(const CIndexBuffer& indexBuffer, UINT offset) const {
+void CPipeline::SetInputLayout(const CInputLayout* inputLayout) const {
 	if (!m_pDeviceContext) {
 		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
 		return;
 	}
 
-	m_pDeviceContext->IASetIndexBuffer(indexBuffer.GetBuffer(),
-		sizeof(CIndexBuffer::m_bufferType) == 4 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, offset);
+	m_pDeviceContext->IASetInputLayout(inputLayout ? inputLayout->GetInputLayout() : nullptr);
 }
 
-void CPipeline::SetVertexShader(const CVertexShader& shader) {
+void CPipeline::SetIndexBuffer(const CIndexBuffer* indexBuffer, UINT offset) const {
 	if (!m_pDeviceContext) {
 		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
 		return;
 	}
 
-	m_pDeviceContext->VSSetShader(shader.GetShader(), nullptr, 0);
+	m_pDeviceContext->IASetIndexBuffer(indexBuffer ? indexBuffer->GetBuffer() : nullptr,
+		std::numeric_limits<CIndexBuffer::m_bufferType>::digits == 16 ? 
+		DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, offset);
+}
+
+void CPipeline::SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY topology) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	m_pDeviceContext->IASetPrimitiveTopology(topology);
+}
+
+void CPipeline::SetVertexShader(const CVertexShader* shader) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	m_pDeviceContext->VSSetShader(shader ? shader->GetShader() : nullptr, nullptr, 0);
+}
+
+void CPipeline::SetHullShader(const CHullShader* shader) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	m_pDeviceContext->HSSetShader(shader ? shader->GetShader() : nullptr, nullptr, 0);
+}
+
+void CPipeline::SetDomainShader(const CDomainShader* shader) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	m_pDeviceContext->DSSetShader(shader ? shader->GetShader() : nullptr, nullptr, 0);
+}
+
+void CPipeline::SetGeometryShader(const CGeometryShader* shader) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	m_pDeviceContext->GSSetShader(shader ? shader->GetShader() : nullptr, nullptr, 0);
+}
+
+void CPipeline::SetComputeShader(const CComputeShader* shader) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	m_pDeviceContext->CSSetShader(shader ? shader->GetShader() : nullptr, nullptr, 0);
 }
 
 void CPipeline::SetRasterizerState(const CRasterizerState* rasterizerState) const {
@@ -61,6 +119,15 @@ void CPipeline::SetViewports(UINT numViewports, const CViewport* viewports[]) co
 		}
 		m_pDeviceContext->RSSetViewports(numViewports, viewportList.data());
 	}
+}
+
+void CPipeline::SetPixelShader(const CPixelShader* shader) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	m_pDeviceContext->PSSetShader(shader ? shader->GetShader() : nullptr, nullptr, 0);
 }
 
 void CPipeline::SetRenderTarget(UINT numRenderTargets, const CRenderTarget* renderTarget[],
@@ -96,6 +163,64 @@ void CPipeline::SetDepthStencilState(const CDepthStencilState* depthStencilState
 	
 	m_pDeviceContext->OMSetDepthStencilState(
 		depthStencilState ? depthStencilState->GetDepthStencilState() : nullptr, stencilRef);
+}
+
+void CPipeline::SetBlendState(const CBlendState* pBlendState, const COLOR& blendFactor, UINT sampleMask) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	m_pDeviceContext->OMSetBlendState(pBlendState ? pBlendState->GetBlendState() : nullptr, 
+		blendFactor.ary.rgba, sampleMask);
+}
+
+void CPipeline::Draw(UINT numVertex, UINT startVertex) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	m_pDeviceContext->Draw(numVertex, startVertex);
+}
+
+void CPipeline::DrawIndexed(UINT numIndex, UINT startIndex, int baseVertex) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	m_pDeviceContext->DrawIndexed(numIndex, startIndex, baseVertex);
+}
+
+void CPipeline::DrawInstanced(UINT numVertexPerInstance, UINT numInstance,
+	UINT startVertex, UINT startInstance) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	m_pDeviceContext->DrawInstanced(numVertexPerInstance, numInstance, startVertex, startInstance);
+}
+
+void CPipeline::DrawIndexedInstanced(UINT numIndexPerInstance, UINT numInstance,
+	UINT startIndex, int baseVertex, UINT startInstance) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	m_pDeviceContext->DrawIndexedInstanced(numIndexPerInstance, numInstance,
+		startIndex, baseVertex, startInstance);
+}
+
+void CPipeline::DrawAuto() const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	m_pDeviceContext->DrawAuto();
 }
 
 

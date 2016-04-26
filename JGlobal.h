@@ -33,6 +33,7 @@
 
 #pragma comment( lib, "dxgi.lib" )
 
+#define J_PI XM_PI
 
 namespace Javelin {
 	typedef union color {

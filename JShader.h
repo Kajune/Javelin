@@ -5,13 +5,18 @@
 
 namespace Javelin {
 
-	enum class ShaderCompileOption : UINT {
+	enum ShaderCompileOption : UINT {
 		DEBUG = D3D10_SHADER_DEBUG |
 				D3D10_SHADER_SKIP_OPTIMIZATION |
 				D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR |
 				D3D10_SHADER_ENABLE_STRICTNESS,
 		DEVELOP = D3D10_SHADER_SKIP_OPTIMIZATION | D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,
 		RELEASE = D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,
+#if defined(DEBUG) || defined(_DEBUG)
+		RECOMMENDED = ShaderCompileOption::DEBUG,
+#else
+		RECOMMENDED = ShaderCompileOption::RELEASE,
+#endif
 	};
 
 	class CShader : public CResource {
@@ -45,7 +50,7 @@ namespace Javelin {
 		CVertexShader& operator=(CVertexShader&&);
 
 		void Initialize(const std::string& filename, const std::string& functionName,
-			const std::string& shaderModel, UINT flag, 
+			const std::string& shaderModel, UINT flag = ShaderCompileOption::RECOMMENDED, 
 			const D3D10_SHADER_MACRO* pMacroDefines = nullptr, LPD3D10INCLUDE pInclude = nullptr);
 		void Cleanup() noexcept;
 
@@ -64,7 +69,7 @@ namespace Javelin {
 		CGeometryShader& operator=(CGeometryShader&&);
 
 		void Initialize(const std::string& filename, const std::string& functionName,
-			const std::string& shaderModel, UINT flag,
+			const std::string& shaderModel, UINT flag = ShaderCompileOption::RECOMMENDED,
 			const D3D10_SHADER_MACRO* pMacroDefines = nullptr, LPD3D10INCLUDE pInclude = nullptr);
 		void Cleanup() noexcept;
 
@@ -83,7 +88,7 @@ namespace Javelin {
 		CPixelShader& operator=(CPixelShader&&);
 
 		void Initialize(const std::string& filename, const std::string& functionName,
-			const std::string& shaderModel, UINT flag,
+			const std::string& shaderModel, UINT flag = ShaderCompileOption::RECOMMENDED,
 			const D3D10_SHADER_MACRO* pMacroDefines = nullptr, LPD3D10INCLUDE pInclude = nullptr);
 		void Cleanup() noexcept;
 
@@ -102,7 +107,7 @@ namespace Javelin {
 		CHullShader& operator=(CHullShader&&);
 
 		void Initialize(const std::string& filename, const std::string& functionName,
-			const std::string& shaderModel, UINT flag,
+			const std::string& shaderModel, UINT flag = ShaderCompileOption::RECOMMENDED,
 			const D3D10_SHADER_MACRO* pMacroDefines = nullptr, LPD3D10INCLUDE pInclude = nullptr);
 		void Cleanup() noexcept;
 
@@ -121,7 +126,7 @@ namespace Javelin {
 		CDomainShader& operator=(CDomainShader&&);
 
 		void Initialize(const std::string& filename, const std::string& functionName,
-			const std::string& shaderModel, UINT flag,
+			const std::string& shaderModel, UINT flag = ShaderCompileOption::RECOMMENDED,
 			const D3D10_SHADER_MACRO* pMacroDefines = nullptr, LPD3D10INCLUDE pInclude = nullptr);
 		void Cleanup() noexcept;
 
@@ -140,7 +145,7 @@ namespace Javelin {
 		CComputeShader& operator=(CComputeShader&&);
 
 		void Initialize(const std::string& filename, const std::string& functionName,
-			const std::string& shaderModel, UINT flag,
+			const std::string& shaderModel, UINT flag = ShaderCompileOption::RECOMMENDED,
 			const D3D10_SHADER_MACRO* pMacroDefines = nullptr, LPD3D10INCLUDE pInclude = nullptr);
 		void Cleanup() noexcept;
 

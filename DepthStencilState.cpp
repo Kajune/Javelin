@@ -32,6 +32,7 @@ CDepthStencilState& CDepthStencilState::operator=(CDepthStencilState&& DepthStei
 	if (this == &DepthSteincilState) {
 		return *this;
 	}
+	Cleanup();
 	m_pDepthSteincilState = DepthSteincilState.m_pDepthSteincilState;
 	m_DepthSteincilDesc = DepthSteincilState.m_DepthSteincilDesc;
 	return *this;

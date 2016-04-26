@@ -1,10 +1,12 @@
 #pragma once
 
 #include "JApplication.h"
+#include "JBlendState.h"
 #include "JBuffer.h"
 #include "JDepthStencil.h"
 #include "JDepthStencilState.h"
 #include "JGlobal.h"
+#include "JInputLayout.h"
 #include "JPipeline.h"
 #include "JRasterizerState.h"
 #include "JRenderTarget.h"
