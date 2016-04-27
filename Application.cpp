@@ -217,6 +217,11 @@ void Application::SetCullMode(D3D11_CULL_MODE mode) {
 	m_rasterizerState.ApplyChange();
 }
 
+void Application::SetFillMode(D3D11_FILL_MODE mode) {
+	m_rasterizerState.GetRasterizerDesc().FillMode = mode;
+	m_rasterizerState.ApplyChange();
+}
+
 //
 //　デバイス関係
 //
@@ -252,6 +257,7 @@ void Application::InitDirect3D() {
 	D3D11_RASTERIZER_DESC rsDesc;
 	rsDesc.FillMode = D3D11_FILL_SOLID;
 	rsDesc.CullMode = D3D11_CULL_BACK;
+	rsDesc.FrontCounterClockwise = false;
 	rsDesc.DepthBias = 0;
 	rsDesc.DepthBiasClamp = 0.0f;
 	rsDesc.SlopeScaledDepthBias = 0.0f;

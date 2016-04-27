@@ -51,6 +51,8 @@ void Application::CDevice::Initialize(
 	m_desc.BufferDesc.Format = format;
 	m_desc.BufferDesc.RefreshRate.Numerator = 60;
 	m_desc.BufferDesc.RefreshRate.Denominator = 1;
+	m_desc.BufferDesc.Scaling = DXGI_MODE_SCALING_CENTERED;
+	m_desc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_PROGRESSIVE;
 	m_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
 	m_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;

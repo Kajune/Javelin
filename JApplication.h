@@ -160,6 +160,7 @@ namespace Javelin {
 		}
 
 		static void SetCullMode(D3D11_CULL_MODE mode);
+		static void SetFillMode(D3D11_FILL_MODE mode);
 
 		//デバイス関係
 		//デバイスを取得する。

@@ -10,6 +10,13 @@ namespace Javelin {
 	protected:
 		UINT m_bufferLength = 0;
 	public:
+		CVertexAndIndexBuffer() = default;
+		virtual ~CVertexAndIndexBuffer() = default;
+		CVertexAndIndexBuffer(const CVertexAndIndexBuffer&);
+		CVertexAndIndexBuffer& operator=(const CVertexAndIndexBuffer&);
+		CVertexAndIndexBuffer(CVertexAndIndexBuffer&&);
+		CVertexAndIndexBuffer& operator=(CVertexAndIndexBuffer&&);
+
 		void Initialize(UINT bufferLength, const BufferType* buffer);
 
 		UINT GetBufferLength() const noexcept {

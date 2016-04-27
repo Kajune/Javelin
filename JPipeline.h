@@ -1,11 +1,12 @@
 #pragma once
 #include "JGlobal.h"
 #include <memory>
-#include <vector>
+#include <functional>
 #include "JVertexAndIndexBuffer.h"
 
 namespace Javelin {
-
+	template <typename BufferType>
+	class CConstantBuffer;
 	class CInputLayout;
 
 	class CVertexShader;
@@ -25,6 +26,10 @@ namespace Javelin {
 
 	class CPipeline final {
 		std::shared_ptr<ID3D11DeviceContext> m_pDeviceContext;
+
+		template<typename BufferType>
+		void SetConstantBuffer(UINT slot, const CConstantBuffer<BufferType>* pBuffer, 
+			std::function<void(std::shared_ptr<ID3D11DeviceContext>, UINT, UINT, ID3D11Buffer**)> func) const;
 	public:
 		CPipeline() noexcept;
 		~CPipeline() noexcept = default;
@@ -33,26 +38,41 @@ namespace Javelin {
 
 		//IA
 		template <typename VertexType>
-		void SetVertexBuffer(UINT startSlot, UINT bufferNum, const CVertexBuffer<VertexType>* ppBuffer[], 
-			const UINT* pStrides, const UINT* pOffsets) const;
+		void SetVertexBuffer(UINT slot, const CVertexBuffer<VertexType>* pBuffer, 
+			UINT stride = 0, UINT offset = 0) const;
 		void SetIndexBuffer(const CIndexBuffer* pIndexBuffer, UINT offset) const;
 		void SetInputLayout(const CInputLayout* pInputLayout) const;
 		void SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY topology) const;
 
 		//VS
 		void SetVertexShader(const CVertexShader* pShader) const;
+		template<typename BufferType>
+		void SetVertexShaderConstantBuffer(UINT slot,
+			const CConstantBuffer<BufferType>* pBuffer) const;
 
 		//HS
 		void SetHullShader(const CHullShader* pShader) const;
+		template<typename BufferType>
+		void SetHullShaderConstantBuffer(UINT slot,
+			const CConstantBuffer<BufferType>* pBuffer) const;
 
 		//DS
 		void SetDomainShader(const CDomainShader* pShader) const;
+		template<typename BufferType>
+		void SetDomainShaderConstantBuffer(UINT slot,
+			const CConstantBuffer<BufferType>* pBuffer) const;
 
 		//GS
 		void SetGeometryShader(const CGeometryShader* pShader) const;
+		template<typename BufferType>
+		void SetGeometryShaderConstantBuffer(UINT slot,
+			const CConstantBuffer<BufferType>* pBuffer) const;
 
 		//CS
 		void SetComputeShader(const CComputeShader* pShader) const;
+		template<typename BufferType>
+		void SetComputeShaderConstantBuffer(UINT slot,
+			const CConstantBuffer<BufferType>* pBuffer) const;
 
 		//SO
 
@@ -62,6 +82,9 @@ namespace Javelin {
 
 		//PS
 		void SetPixelShader(const CPixelShader* pShader) const;
+		template<typename BufferType>
+		void SetPixelShaderConstantBuffer(UINT slot,
+			const CConstantBuffer<BufferType>* pBuffer) const;
 
 		//OM
 		void SetRenderTarget(UINT numRenderTargets, const CRenderTarget* ppRenderTarget[], 
@@ -81,26 +104,4 @@ namespace Javelin {
 			UINT startIndex = 0, int baseVertex = 0, UINT startInstance = 0) const;
 		void DrawAuto() const;
 	};
-
-	template <typename VertexType>
-	void CPipeline::SetVertexBuffer(UINT startSlot, UINT bufferNum, const CVertexBuffer<VertexType>* pBuffer[],
-		const UINT* pStrides, const UINT* pOffsets) const {
-		if (!m_pDeviceContext) {
-			Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
-			return;
-		}
-
-		if (bufferNum == 1) {
-			ID3D11Buffer* buffer[] = { pBuffer[0]->GetBuffer() };
-			m_pDeviceContext->IASetVertexBuffers(startSlot, 1, buffer, pStrides, pOffsets);
-		} else {
-			std::vector<ID3D11Buffer*> buffer;
-			buffer.resize(bufferNum);
-			for (UINT i = 0; i < bufferNum; i++) {
-				buffer.at(i) = pBuffer[i]->GetBuffer();
-			}
-			m_pDeviceContext->IASetVertexBuffers(startSlot, bufferNum, buffer.data(), pStrides, pOffsets);
-		}
-	}
-
 }

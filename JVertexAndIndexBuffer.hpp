@@ -4,6 +4,40 @@
 
 namespace Javelin {
 	template <typename BufferType, UINT BindFlag>
+	CVertexAndIndexBuffer<BufferType, BindFlag>::CVertexAndIndexBuffer(const CVertexAndIndexBuffer& buffer) {
+		operator=(buffer);
+	}
+
+	template <typename BufferType, UINT BindFlag>
+	CVertexAndIndexBuffer<BufferType, BindFlag>&
+		CVertexAndIndexBuffer<BufferType, BindFlag>::operator=
+		(const CVertexAndIndexBuffer<BufferType, BindFlag>& buffer) {
+		if (this == &buffer) {
+			return *this;
+		}
+		CBuffer::operator=(buffer);
+		m_bufferLength = buffer.m_bufferLength;
+		return *this;
+	}
+
+	template <typename BufferType, UINT BindFlag>
+	CVertexAndIndexBuffer<BufferType, BindFlag>::CVertexAndIndexBuffer(CVertexAndIndexBuffer&& buffer) {
+		operator=(std::move(buffer));
+	}
+
+	template <typename BufferType, UINT BindFlag>
+	CVertexAndIndexBuffer<BufferType, BindFlag>&
+		CVertexAndIndexBuffer<BufferType, BindFlag>::operator=
+		(CVertexAndIndexBuffer<BufferType, BindFlag>&& buffer) {
+		if (this == &buffer) {
+			return *this;
+		}
+		CBuffer::operator=(std::move(buffer));
+		m_bufferLength = buffer.m_bufferLength;
+		return *this;
+	}
+
+	template <typename BufferType, UINT BindFlag>
 	void CVertexAndIndexBuffer<BufferType, BindFlag>::Initialize(UINT bufferLength, const BufferType* buffer) {
 		m_bufferLength = bufferLength;
 
@@ -63,7 +97,5 @@ namespace Javelin {
 
 		pDeviceContext->Unmap(m_pBuffer, 0);
 	}
-
-
 
 }

@@ -32,7 +32,7 @@ void CBuffer::Cleanup() noexcept {
 }
 
 CBuffer::CBuffer(const CBuffer& buffer) {
-	operator=(std::move(buffer));
+	operator=(buffer);
 }
 
 CBuffer& CBuffer::operator=(const CBuffer& buffer) {
