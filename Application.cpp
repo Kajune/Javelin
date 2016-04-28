@@ -2,11 +2,14 @@
 #include <locale.h>
 #include <time.h>
 #include "JUtility.h"
+#include "JRenderTarget.h"
+#include "JDepthStencil.h"
 
 using namespace Javelin;
 
 ID3D11RenderTargetView*	Application::m_pRenderTargetView = nullptr;
-CDepthStencil Application::m_depthStencil;
+ID3D11Texture2D*		Application::m_pDepthStencil = nullptr;
+ID3D11DepthStencilView* Application::m_pDepthStencilView = nullptr;
 CDepthStencilState Application::m_depthStencilState;
 CRasterizerState Application::m_rasterizerState;
 CViewport Application::m_viewport;
@@ -16,11 +19,13 @@ CPipeline Application::m_pipeline;
 Application::CWindow Application::m_window;
 Application::CDevice Application::m_device;
 bool Application::m_isSingleThreaded = false;
+bool Application::m_multiSampleEnabled = true;
 bool Application::m_isWindowSizeChanged = true;
 bool Application::m_use3D = true;
 bool Application::m_useAntialias = false;
 float Application::m_fps = 0.0f;
 float Application::m_averageFps = 0.0f;
+std::function<void(UINT, UINT)> Application::m_screenSizeCallback;
 #if defined(DEBUG) || defined(_DEBUG)
 std::ofstream Application::m_logFile("log.txt");
 #endif
@@ -124,6 +129,25 @@ void Application::SetWindowTitle(const std::string& text) noexcept {
 	SetWindowText(m_window.GetHWnd(), text.c_str());
 }
 
+HRESULT Application::SetIsWindowed(bool isWindowed) {
+	if (!GetSwapChain()) {
+		WriteLog("スワップチェインの原因不明な消失");
+		return E_FAIL;
+	}
+
+	return GetSwapChain()->SetFullscreenState(!isWindowed, nullptr);
+}
+
+bool Application::GetIsWindowed() {
+	if (!GetSwapChain()) {
+		WriteLog("スワップチェインの原因不明な消失");
+		return false;
+	}
+	BOOL isWindowed;
+	GetSwapChain()->GetFullscreenState(&isWindowed, nullptr);
+	return isWindowed == FALSE;
+}
+
 void Application::GetScreenSize(UINT& width, UINT& height) noexcept {
 	static UINT width_t = 0;
 	static UINT height_t = 0;
@@ -143,6 +167,25 @@ void Application::WriteLog(const std::string& text) noexcept {
 	m_logFile << clock() << ":" << text << std::endl;
 	OutputDebugString((text + "\n").c_str());
 #endif
+}
+
+void Application::SetCallbackFuncWhenScreensizeChanged(std::function<void(UINT, UINT)> callBack) {
+	m_screenSizeCallback = callBack;
+}
+
+void Application::SaveScreenShot(const std::string& filename, 
+	D3DX11_IMAGE_FILE_FORMAT format, const CTexture2D* texture) {
+	if (texture) {
+		D3DX11SaveTextureToFile(m_device.GetImmediateContext(), texture->GetTexture(), format, filename.c_str());
+	} else {
+		ID3D11Texture2D* pBackBuffer;
+		if (FAILED(GetSwapChain()->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer))) {
+			WriteLog("バックバッファの取得に失敗しました");
+			throw - 1;
+		}
+		D3DX11SaveTextureToFile(m_device.GetImmediateContext(), pBackBuffer, format, filename.c_str());
+		SAFE_RELEASE(pBackBuffer);
+	}
 }
 
 //
@@ -166,8 +209,21 @@ void Application::ClearScreen(const COLOR& color, bool clearDepth, bool clearSte
 	m_device.GetImmediateContext()->ClearRenderTargetView(m_pRenderTargetView, color.ary.rgba);
 	if (m_use3D) {
 		UINT clearFlag = (clearDepth ? D3D11_CLEAR_DEPTH : 0) | (clearStencil ? D3D11_CLEAR_STENCIL : 0);
-		m_device.GetImmediateContext()->ClearDepthStencilView(m_depthStencil.GetDepthStencilView(),
+		m_device.GetImmediateContext()->ClearDepthStencilView(m_pDepthStencilView,
 			clearFlag, 1.0f, 0);
+	}
+}
+
+void Application::ClearScreen(const CRenderTarget* renderTarget, const CDepthStencil* depthStencil,
+	const COLOR& color,	bool clearDepth, bool clearStencil) {
+	if (renderTarget) {
+		m_device.GetImmediateContext()->
+			ClearRenderTargetView(renderTarget->GetRenderTargetView(), color.ary.rgba);
+	}
+	if (depthStencil) {
+		UINT clearFlag = (clearDepth ? D3D11_CLEAR_DEPTH : 0) | (clearStencil ? D3D11_CLEAR_STENCIL : 0);
+		m_device.GetImmediateContext()->
+			ClearDepthStencilView(depthStencil->GetDepthStencilView(), clearFlag, 1.0f, 0);
 	}
 }
 
@@ -176,7 +232,7 @@ void Application::SetDefaultRenderTarget(bool setDepthStencil) {
 }
 
 void Application::SetDefaultRenderTarget(const CPipeline& pipeline, bool setDepthStencil) {
-	pipeline.SetRenderTarget(1, &m_pRenderTargetView, setDepthStencil ? &m_depthStencil : nullptr);
+	pipeline.SetRenderTarget(1, &m_pRenderTargetView, setDepthStencil ? m_pDepthStencilView : nullptr);
 }
 
 void Application::SetDefaultDepthStencilState() {
@@ -263,7 +319,7 @@ void Application::InitDirect3D() {
 	rsDesc.SlopeScaledDepthBias = 0.0f;
 	rsDesc.DepthClipEnable = m_use3D;
 	rsDesc.ScissorEnable = false;
-	rsDesc.MultisampleEnable = false;
+	rsDesc.MultisampleEnable = m_multiSampleEnabled;
 	rsDesc.AntialiasedLineEnable = m_useAntialias;
 	m_rasterizerState.Initialize(rsDesc);
 
@@ -309,7 +365,34 @@ void Application::InitBackBuffer() {
 
 	if (m_use3D) {
 		WriteLog("デプスステンシルビューの作成");
-		m_depthStencil.Initialize(descBackBuffer.Width, descBackBuffer.Height);
+
+		D3D11_TEXTURE2D_DESC desc{};
+		desc.ArraySize = 1;
+		desc.Format = DXGI_FORMAT_D32_FLOAT;
+		desc.MipLevels = 1;
+		desc.MiscFlags = 0;
+		desc.Width = descBackBuffer.Width;
+		desc.Height = descBackBuffer.Height;
+		desc.SampleDesc.Count = descBackBuffer.SampleDesc.Count;
+		desc.SampleDesc.Quality = descBackBuffer.SampleDesc.Quality;
+		desc.CPUAccessFlags = 0;
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+		if (FAILED(GetDevice()->CreateTexture2D(&desc, nullptr, &m_pDepthStencil))) {
+			Application::WriteLog("デプスステンシルバッファの作成に失敗しました");
+			throw - 1;
+		}
+
+		D3D11_DEPTH_STENCIL_VIEW_DESC descDSV{};
+		descDSV.Format = desc.Format;
+		descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+		descDSV.Flags = 0;
+		descDSV.Texture2D.MipSlice = 0;
+		if (FAILED(GetDevice()->CreateDepthStencilView(m_pDepthStencil, &descDSV, &m_pDepthStencilView))) {
+			Application::WriteLog("デプスステンシルビューの作成に失敗しました");
+			throw - 1;
+		}
 	}
 
 	WriteLog("ビューポートの設定");
@@ -357,7 +440,8 @@ void Application::CheckDeviceLost() {
 }
 
 void Application::CleanupDirect3D() noexcept {
-	m_depthStencil.Cleanup();
+	SAFE_RELEASE(m_pDepthStencilView);
+	SAFE_RELEASE(m_pDepthStencil);
 	SAFE_RELEASE(m_pRenderTargetView);
 }
 
@@ -372,7 +456,7 @@ LRESULT Application::MainWndProc(HWND hWnd, UINT msg, UINT wParam, LONG lParam) 
 			CleanupDirect3D();
 
 			try {
-				m_device.ResizeTarget(LOWORD(lParam), HIWORD(lParam));
+				m_device.ResizeBuffer(LOWORD(lParam), HIWORD(lParam));
 			} catch (...) {
 				WriteLog("ウィンドウサイズの変更に失敗しました");
 			}
@@ -381,6 +465,10 @@ LRESULT Application::MainWndProc(HWND hWnd, UINT msg, UINT wParam, LONG lParam) 
 				InitBackBuffer();
 			} catch (...) {
 				WriteLog("バックバッファのサイズ変更に失敗しました");
+			}
+
+			if (m_screenSizeCallback) {
+				m_screenSizeCallback(LOWORD(lParam), HIWORD(lParam));
 			}
 
 			m_isWindowSizeChanged = true;

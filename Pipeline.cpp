@@ -9,6 +9,7 @@
 #include "JShader.h"
 #include "JInputLayout.h"
 #include "JBlendState.h"
+#include "JShaderResourceView.h"
 
 using namespace Javelin;
 
@@ -58,6 +59,17 @@ void CPipeline::SetVertexShader(const CVertexShader* shader) const {
 	m_pDeviceContext->VSSetShader(shader ? shader->GetShader() : nullptr, nullptr, 0);
 }
 
+void CPipeline::SetVertexShaderResource(UINT slot, const CShaderResourceView* shaderResourceView) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	ID3D11ShaderResourceView* srvs[] = { shaderResourceView ?
+		shaderResourceView->GetShaderResourceView() : nullptr };
+	m_pDeviceContext->VSSetShaderResources(slot, 1, srvs);
+}
+
 void CPipeline::SetHullShader(const CHullShader* shader) const {
 	if (!m_pDeviceContext) {
 		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
@@ -65,6 +77,17 @@ void CPipeline::SetHullShader(const CHullShader* shader) const {
 	}
 
 	m_pDeviceContext->HSSetShader(shader ? shader->GetShader() : nullptr, nullptr, 0);
+}
+
+void CPipeline::SetHullShaderResource(UINT slot, const CShaderResourceView* shaderResourceView) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	ID3D11ShaderResourceView* srvs[] = { shaderResourceView ?
+		shaderResourceView->GetShaderResourceView() : nullptr };
+	m_pDeviceContext->HSSetShaderResources(slot, 1, srvs);
 }
 
 void CPipeline::SetDomainShader(const CDomainShader* shader) const {
@@ -76,6 +99,17 @@ void CPipeline::SetDomainShader(const CDomainShader* shader) const {
 	m_pDeviceContext->DSSetShader(shader ? shader->GetShader() : nullptr, nullptr, 0);
 }
 
+void CPipeline::SetDomainShaderResource(UINT slot, const CShaderResourceView* shaderResourceView) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	ID3D11ShaderResourceView* srvs[] = { shaderResourceView ?
+		shaderResourceView->GetShaderResourceView() : nullptr };
+	m_pDeviceContext->DSSetShaderResources(slot, 1, srvs);
+}
+
 void CPipeline::SetGeometryShader(const CGeometryShader* shader) const {
 	if (!m_pDeviceContext) {
 		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
@@ -85,6 +119,17 @@ void CPipeline::SetGeometryShader(const CGeometryShader* shader) const {
 	m_pDeviceContext->GSSetShader(shader ? shader->GetShader() : nullptr, nullptr, 0);
 }
 
+void CPipeline::SetGeometryShaderResource(UINT slot, const CShaderResourceView* shaderResourceView) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	ID3D11ShaderResourceView* srvs[] = { shaderResourceView ?
+		shaderResourceView->GetShaderResourceView() : nullptr };
+	m_pDeviceContext->GSSetShaderResources(slot, 1, srvs);
+}
+
 void CPipeline::SetComputeShader(const CComputeShader* shader) const {
 	if (!m_pDeviceContext) {
 		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
@@ -92,6 +137,17 @@ void CPipeline::SetComputeShader(const CComputeShader* shader) const {
 	}
 
 	m_pDeviceContext->CSSetShader(shader ? shader->GetShader() : nullptr, nullptr, 0);
+}
+
+void CPipeline::SetComputeShaderResource(UINT slot, const CShaderResourceView* shaderResourceView) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	ID3D11ShaderResourceView* srvs[] = { shaderResourceView ?
+		shaderResourceView->GetShaderResourceView() : nullptr };
+	m_pDeviceContext->CSSetShaderResources(slot, 1, srvs);
 }
 
 void CPipeline::SetRasterizerState(const CRasterizerState* rasterizerState) const {
@@ -130,29 +186,39 @@ void CPipeline::SetPixelShader(const CPixelShader* shader) const {
 	m_pDeviceContext->PSSetShader(shader ? shader->GetShader() : nullptr, nullptr, 0);
 }
 
-void CPipeline::SetRenderTarget(UINT numRenderTargets, const CRenderTarget* renderTarget[],
+void CPipeline::SetPixelShaderResource(UINT slot, const CShaderResourceView* shaderResourceView) const{
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	ID3D11ShaderResourceView* srvs[] = { shaderResourceView ? 
+		shaderResourceView->GetShaderResourceView() : nullptr };
+	m_pDeviceContext->PSSetShaderResources(slot, 1, srvs);
+}
+
+void CPipeline::SetRenderTarget(UINT numRenderTargets, CRenderTarget const* renderTarget[],
 	const CDepthStencil* depthStencil) const{
 	if (numRenderTargets == 1) {
 		auto ptr = renderTarget[0]->GetRenderTargetView();
-		SetRenderTarget(1, &ptr, depthStencil);
+		SetRenderTarget(1, &ptr, depthStencil ? depthStencil->GetDepthStencilView() : nullptr);
 	} else {
 		std::vector<ID3D11RenderTargetView*> rtvs;
 		rtvs.resize(numRenderTargets);
 		for (UINT i = 0; i < numRenderTargets; i++) {
 			rtvs.at(i) = renderTarget[i] ? renderTarget[i]->GetRenderTargetView() : nullptr;
 		}
-		SetRenderTarget(numRenderTargets, rtvs.data(), depthStencil);
+		SetRenderTarget(numRenderTargets, rtvs.data(), depthStencil ? depthStencil->GetDepthStencilView() : nullptr);
 	}
 }
 
 void CPipeline::SetRenderTarget(UINT numRenderTargets, ID3D11RenderTargetView* renderTarget[],
-	const CDepthStencil* depthStencil) const{
+	ID3D11DepthStencilView* pDepthStencil) const{
 	if (!m_pDeviceContext) {
 		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
 		return;
 	}
-	m_pDeviceContext->OMSetRenderTargets(numRenderTargets, renderTarget, 
-		depthStencil ? depthStencil->GetDepthStencilView() : nullptr);
+	m_pDeviceContext->OMSetRenderTargets(numRenderTargets, renderTarget, pDepthStencil);
 }
 
 void CPipeline::SetDepthStencilState(const CDepthStencilState* depthStencilState, UINT stencilRef) const {

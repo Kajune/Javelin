@@ -1,15 +1,18 @@
 #pragma once
 #include "JGlobal.h"
-#include "JDepthStencil.h"
 #include "JViewport.h"
 #include "JRasterizerState.h"
 #include "JDepthStencilState.h"
 #include "JPipeline.h"
 #include "JBlendState.h"
+#include "JTexture.h"
 #include <fstream>
 #include <memory>
 
 namespace Javelin {
+
+	class CRenderTarget;
+	class CDepthStencil;
 
 	class Application final {
 		Application() = delete;
@@ -59,6 +62,7 @@ namespace Javelin {
 			void Cleanup() noexcept;
 
 			void ResizeTarget(UINT width, UINT height);
+			void ResizeBuffer(UINT width, UINT height);
 
 			ID3D11Device* GetDevice() const noexcept{
 				return m_pD3D11Device;
@@ -72,7 +76,8 @@ namespace Javelin {
 		}m_device;
 
 		static ID3D11RenderTargetView*	m_pRenderTargetView;
-		static CDepthStencil			m_depthStencil;
+		static ID3D11Texture2D*			m_pDepthStencil;
+		static ID3D11DepthStencilView*	m_pDepthStencilView;
 		static CDepthStencilState		m_depthStencilState;
 		static CRasterizerState			m_rasterizerState;
 		static CViewport				m_viewport;
@@ -80,8 +85,11 @@ namespace Javelin {
 		static CPipeline				m_pipeline;
 
 		static bool m_isSingleThreaded;
+		static bool m_multiSampleEnabled;
 		static bool m_use3D;
 		static bool m_useAntialias;
+
+		static std::function<void(UINT, UINT)> m_screenSizeCallback;
 
 		static float m_fps;
 		static float m_averageFps;
@@ -112,6 +120,10 @@ namespace Javelin {
 		//ユーティリティ
 		//ウィンドウのタイトルを変更する。
 		static void SetWindowTitle(const std::string& text) noexcept;
+		//フルスクリーン・ウィンドウを切り替える。
+		static HRESULT SetIsWindowed(bool isWindowed);
+		//フルスクリーンモードかどうかを得る。
+		static bool GetIsWindowed();
 		//描画領域のサイズを取得する。
 		static void GetScreenSize(UINT& width, UINT& height) noexcept;
 		//ログを出力する。
@@ -120,12 +132,24 @@ namespace Javelin {
 		static float GetFPS() noexcept {
 			return m_fps;
 		}
+		//画面サイズが変更されたときに呼び出す関数をセットする。
+		static void SetCallbackFuncWhenScreensizeChanged(std::function<void(UINT, UINT)> callBack);
+		//スクリーンショットを保存する
+		//注意：マルチサンプリングしている状態では画面のスクリーンショットを撮ることができない
+		static void SaveScreenShot(const std::string& filename, 
+			D3DX11_IMAGE_FILE_FORMAT format = D3DX11_IFF_PNG,
+			const CTexture2D* texture = nullptr);
 
 		//初期化前設定
 		//シングルスレッドで動かすかどうかを決定する。シングルスレッドの場合多少パフォーマンスが向上する。
 		//初期値はfalse
 		static void SetIsSingleThreaded(bool isSingleThreaded) noexcept {
 			m_isSingleThreaded = isSingleThreaded;
+		}
+		//マルチサンプリング機能を利用するかどうかを決定する。
+		//初期値はtrue
+		static void SetMultiSampleEnabled(bool multiSampleEnabled) noexcept {
+			m_multiSampleEnabled = multiSampleEnabled;
 		}
 		//3D機能を使用するかどうかを決定する。
 		//初期値はtrue
@@ -143,8 +167,11 @@ namespace Javelin {
 		static HRESULT Present(UINT vSyncInterval = 1);
 		static void ClearScreen(const COLOR& color = COLOR(),
 			bool clearDepth = true, bool clearStencil = true);
-		static void SetDefaultRenderTarget(bool setDepthStencil);
-		static void SetDefaultRenderTarget(const CPipeline& pipeline, bool setDepthStencil);
+		static void ClearScreen(const CRenderTarget* renderTarget, const CDepthStencil* depthStencil,
+			const COLOR& color = COLOR(),
+			bool clearDepth = true, bool clearStencil = true);
+		static void SetDefaultRenderTarget(bool setDepthStencil = true);
+		static void SetDefaultRenderTarget(const CPipeline& pipeline, bool setDepthStencil = true);
 		static void SetDefaultDepthStencilState();
 		static void SetDefaultDepthStencilState(const CPipeline& pipeline);
 		static void SetDefaultRasterizerState();

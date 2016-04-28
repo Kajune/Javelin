@@ -1,6 +1,6 @@
 #pragma once
 
-#include "JResource.h"
+#include "JShaderResourceView.h"
 
 namespace Javelin {
 	template<typename TextureType>
@@ -9,7 +9,7 @@ namespace Javelin {
 	};
 
 	template <typename TextureType>
-	class CTexture : public CResource {
+	class CTexture : public CShaderResourceView {
 	protected:
 		using DescType = typename TextureDescType<TextureType>::Type;
 		TextureType*					m_pTexture;
@@ -35,7 +35,7 @@ namespace Javelin {
 		TextureType* GetTexture() const noexcept {
 			return m_pTexture;
 		}
-		ID3D11ShaderResourceView* GetShaderResourceView() const noexcept {
+		ID3D11ShaderResourceView* GetShaderResourceView() const noexcept override {
 			return m_pShaderResourceView;
 		}
 	};

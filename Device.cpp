@@ -51,7 +51,7 @@ void Application::CDevice::Initialize(
 	m_desc.BufferDesc.Format = format;
 	m_desc.BufferDesc.RefreshRate.Numerator = 60;
 	m_desc.BufferDesc.RefreshRate.Denominator = 1;
-	m_desc.BufferDesc.Scaling = DXGI_MODE_SCALING_CENTERED;
+	m_desc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 	m_desc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_PROGRESSIVE;
 	m_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
@@ -132,3 +132,13 @@ void Application::CDevice::ResizeTarget(UINT width, UINT height) {
 		throw - 1;
 	}
 }
+
+void Application::CDevice::ResizeBuffer(UINT width, UINT height) {
+	m_desc.BufferDesc.Width = width;
+	m_desc.BufferDesc.Height = height;
+	if (FAILED(m_pSwapChain->ResizeBuffers(m_desc.BufferCount, m_desc.BufferDesc.Width, 
+		m_desc.BufferDesc.Height, m_desc.BufferDesc.Format, m_desc.Flags))) {
+		throw - 1;
+	}
+}
+

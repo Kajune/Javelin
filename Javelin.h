@@ -9,6 +9,7 @@
 #include "JDepthStencil.h"
 #include "JDepthStencilState.h"
 #include "JGlobal.h"
+#include "JImage.h"
 #include "JInputLayout.h"
 #include "JPipeline.h"
 #include "JPipeline.hpp"

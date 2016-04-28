@@ -1,3 +1,6 @@
+Texture2D tex : register(t0);
+SamplerState smp : register(s0);
+
 cbuffer cbNeverChanges : register(b0) {
 	matrix Projection;
 };
@@ -14,11 +17,13 @@ cbuffer cbChangesEveryObject :register(b2) {
 struct VS_INPUT {
 	float3 Pos : POSITION;
 	float3 Col : COLOR;
+	float2 Tex : TEXTURE;
 };
 
 struct GS_INPUT {
 	float4 Pos : SV_POSITION;
 	float4 Col : COLOR;
+	float2 Tex : TEXTURE;
 };
 
 struct PS_INPUT {
@@ -26,6 +31,7 @@ struct PS_INPUT {
 	float3 PosView : POSVIEW;
 	float3 Norm : NORMAL;
 	float4 Col : COLOR;
+	float2 Tex : TEXTURE;
 };
 
 GS_INPUT VS(VS_INPUT input) {
@@ -33,6 +39,7 @@ GS_INPUT VS(VS_INPUT input) {
 	float4 pos4 = float4(input.Pos, 1.0);
 	output.Pos = mul(mul(pos4, World), View);
 	output.Col = float4(input.Col, 1.0);
+	output.Tex = input.Tex;
 
 	return output;
 }
@@ -51,6 +58,7 @@ void GS(triangle GS_INPUT input[3],
 		output.PosView = input[i].Pos.xyz / input[i].Pos.w;
 		output.Pos = mul(input[i].Pos, Projection);
 		output.Col = input[i].Col;
+		output.Tex = input[i].Tex;
 
 		TriStream.Append(output);
 	}
@@ -60,6 +68,6 @@ void GS(triangle GS_INPUT input[3],
 
 float4 PS(PS_INPUT input) : SV_TARGET{
 	float3 light = Light - input.PosView;
-	float bright = 60 * dot(normalize(light), input.Norm) / pow(length(light), 2);
-	return saturate(bright * input.Col);
+	float bright = 100 * dot(normalize(light), input.Norm) / pow(length(light), 2);
+	return saturate(bright * tex.Sample(smp, input.Tex));
 }
