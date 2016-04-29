@@ -3,7 +3,7 @@
 using namespace Javelin;
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
-	if (Application::Initialize("Javelin", 640, 480, true, 1)){
+	if (Application::Initialize("Javelin", 640, 480, true, 32)){
 		Application::Cleanup();
 		return -1;
 	}
@@ -130,17 +130,11 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 		cbNeverChanges.UpdateBufferValue(cam.GetProjection(), Application::GetImmediateContext());
 	});
 
-	CRenderTarget renderTarget;
-	CDepthStencil ds;
-	renderTarget.Initialize(512, 512, DXGI_FORMAT_R8G8B8A8_UNORM);
-	ds.Initialize(512, 512);
-
-	CViewport viewport;
-	viewport.Initialize(512, 512);
+	CSamplerState sampler;
+	sampler.Initialize(D3D11_TEXTURE_ADDRESS_WRAP);
 
 	while (Application::MainLoop() == 0) {
 		Application::ClearScreen(COLOR(0.0f, 0.125f, 0.3f, 1.0f));
-		Application::ClearScreen(&renderTarget, &ds);
 		
 		cam.SetCamPos(XMFLOAT3(0, 5, -5));
 		cam.SetTargetPos(XMFLOAT3(0, 0, 0));
@@ -156,24 +150,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 		XMStoreFloat4x4(&world, XMMatrixTranspose(matY * matX));
 		cbChangesEveryObject.UpdateBufferValue(world, Application::GetImmediateContext());
 
-		//
-		//1Pass
-		//
-
-		CRenderTarget const* rts[] = { &renderTarget };
-		CViewport const* vps[] = { &viewport };
-		Application::GetDefaultPipeline().SetViewports(1, vps);
 		Application::GetDefaultPipeline().SetPixelShaderResource(0, &image);
-		Application::GetDefaultPipeline().SetRenderTarget(1, rts, &ds);
-		Application::GetDefaultPipeline().Draw(vb.GetBufferLength());
-
-		//
-		//2Pass
-		//
-
-		Application::SetDefaultRenderTarget(true);
-		Application::SetDefaultViewport();
-		Application::GetDefaultPipeline().SetPixelShaderResource(0, &renderTarget);
+		Application::GetDefaultPipeline().SetPixelShaderSamplerState(0, &sampler);
 		Application::GetDefaultPipeline().Draw(vb.GetBufferLength());
 		
 		Application::Present();

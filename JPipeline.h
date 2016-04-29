@@ -9,6 +9,7 @@ namespace Javelin {
 	class CConstantBuffer;
 	class CInputLayout;
 	class CShaderResourceView;
+	class CSamplerState;
 
 	class CVertexShader;
 	class CHullShader;
@@ -92,6 +93,7 @@ namespace Javelin {
 		void SetPixelShaderConstantBuffer(UINT slot,
 			const CConstantBuffer<BufferType>* pBuffer) const;
 		void SetPixelShaderResource(UINT slot, const CShaderResourceView* shaderResourceView) const;
+		void SetPixelShaderSamplerState(UINT slot, const CSamplerState* samplerState) const;
 
 		//OM
 		void SetRenderTarget(UINT numRenderTargets, CRenderTarget const* ppRenderTarget[],

@@ -10,6 +10,7 @@
 #include "JInputLayout.h"
 #include "JBlendState.h"
 #include "JShaderResourceView.h"
+#include "JSamplerState.h"
 
 using namespace Javelin;
 
@@ -195,6 +196,16 @@ void CPipeline::SetPixelShaderResource(UINT slot, const CShaderResourceView* sha
 	ID3D11ShaderResourceView* srvs[] = { shaderResourceView ? 
 		shaderResourceView->GetShaderResourceView() : nullptr };
 	m_pDeviceContext->PSSetShaderResources(slot, 1, srvs);
+}
+
+void CPipeline::SetPixelShaderSamplerState(UINT slot, const CSamplerState* samplerState) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	ID3D11SamplerState* smps[] = { samplerState ? samplerState->GetSamplerState() : nullptr };
+	m_pDeviceContext->PSSetSamplers(slot, 1, smps);
 }
 
 void CPipeline::SetRenderTarget(UINT numRenderTargets, CRenderTarget const* renderTarget[],

@@ -38,7 +38,7 @@ int Application::Initialize(const std::string& appName, UINT width, UINT height,
 	bool isWindowed, UINT MSAA_level, HICON icon, HCURSOR cursor,
 	DXGI_FORMAT format, D3D_DRIVER_TYPE driverType) noexcept{
 	WriteLog("アプリケーションを開始します");
-	CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	CoInitializeEx(nullptr, m_isSingleThreaded ? COINIT_APARTMENTTHREADED : COINIT_MULTITHREADED);
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	setlocale(LC_ALL, "jpn");
 

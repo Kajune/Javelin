@@ -16,6 +16,7 @@
 #include "JRasterizerState.h"
 #include "JRenderTarget.h"
 #include "JResource.h"
+#include "JSamplerState.h"
 #include "JShader.h"
 #include "JTexture.h"
 #include "JUtility.h"
