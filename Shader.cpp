@@ -35,6 +35,7 @@ void CShader::Cleanup() noexcept {
 	SAFE_RELEASE(m_pBlob);
 }
 
+/*
 CShader::CShader(CShader&& Shader) {
 	operator=(std::move(Shader));
 }
@@ -46,7 +47,7 @@ CShader& CShader::operator=(CShader&& Shader) {
 	Cleanup();
 	m_pBlob = Shader.m_pBlob;
 	return *this;
-}
+}*/
 
 //
 //VertexShader
@@ -83,6 +84,7 @@ void CVertexShader::Cleanup() noexcept {
 	SAFE_RELEASE(m_pShader);
 }
 
+/*
 CVertexShader::CVertexShader(CVertexShader&& Shader) {
 	operator=(std::move(Shader));
 }
@@ -95,7 +97,7 @@ CVertexShader& CVertexShader::operator=(CVertexShader&& Shader) {
 	m_pShader = Shader.m_pShader;
 	CShader::operator=(std::move(Shader));
 	return *this;
-}
+}*/
 
 //
 //GeometryShader
@@ -132,6 +134,7 @@ void CGeometryShader::Cleanup() noexcept {
 	SAFE_RELEASE(m_pShader);
 }
 
+/*
 CGeometryShader::CGeometryShader(CGeometryShader&& Shader) {
 	operator=(std::move(Shader));
 }
@@ -144,7 +147,7 @@ CGeometryShader& CGeometryShader::operator=(CGeometryShader&& Shader) {
 	m_pShader = Shader.m_pShader;
 	CShader::operator=(std::move(Shader));
 	return *this;
-}
+}*/
 
 //
 //PixelShader
@@ -181,6 +184,7 @@ void CPixelShader::Cleanup() noexcept {
 	SAFE_RELEASE(m_pShader);
 }
 
+/*
 CPixelShader::CPixelShader(CPixelShader&& Shader) {
 	operator=(std::move(Shader));
 }
@@ -193,7 +197,7 @@ CPixelShader& CPixelShader::operator=(CPixelShader&& Shader) {
 	m_pShader = Shader.m_pShader;
 	CShader::operator=(std::move(Shader));
 	return *this;
-}
+}*/
 
 //
 //HullShader
@@ -230,6 +234,7 @@ void CHullShader::Cleanup() noexcept {
 	SAFE_RELEASE(m_pShader);
 }
 
+/*
 CHullShader::CHullShader(CHullShader&& Shader) {
 	operator=(std::move(Shader));
 }
@@ -242,7 +247,7 @@ CHullShader& CHullShader::operator=(CHullShader&& Shader) {
 	m_pShader = Shader.m_pShader;
 	CShader::operator=(std::move(Shader));
 	return *this;
-}
+}*/
 
 //
 //DomainShader
@@ -279,6 +284,7 @@ void CDomainShader::Cleanup() noexcept {
 	SAFE_RELEASE(m_pShader);
 }
 
+/*
 CDomainShader::CDomainShader(CDomainShader&& Shader) {
 	operator=(std::move(Shader));
 }
@@ -291,7 +297,7 @@ CDomainShader& CDomainShader::operator=(CDomainShader&& Shader) {
 	m_pShader = Shader.m_pShader;
 	CShader::operator=(std::move(Shader));
 	return *this;
-}
+}*/
 
 //
 //ComputeShader
@@ -328,6 +334,7 @@ void CComputeShader::Cleanup() noexcept {
 	SAFE_RELEASE(m_pShader);
 }
 
+/*
 CComputeShader::CComputeShader(CComputeShader&& Shader) {
 	operator=(std::move(Shader));
 }
@@ -340,4 +347,4 @@ CComputeShader& CComputeShader::operator=(CComputeShader&& Shader) {
 	m_pShader = Shader.m_pShader;
 	CShader::operator=(std::move(Shader));
 	return *this;
-}
+}*/

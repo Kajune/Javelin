@@ -28,15 +28,18 @@ namespace Javelin {
 
 	class CPipeline final {
 		std::shared_ptr<ID3D11DeviceContext> m_pDeviceContext;
+		bool m_useDefaultSettings;
 
 		template<typename BufferType>
 		void SetConstantBuffer(UINT slot, const CConstantBuffer<BufferType>* pBuffer, 
 			std::function<void(std::shared_ptr<ID3D11DeviceContext>, UINT, UINT, ID3D11Buffer**)> func) const;
 	public:
 		CPipeline() noexcept;
-		~CPipeline() noexcept = default;
+		~CPipeline() noexcept;
 
-		void Initialize(std::shared_ptr<ID3D11DeviceContext> pDeviceContext);
+		void Initialize(std::shared_ptr<ID3D11DeviceContext> pDeviceContext,
+			bool useDefaultSettings = true);
+		void OnDefaultSettingsChanged() const;
 
 		//IA
 		template <typename VertexType>

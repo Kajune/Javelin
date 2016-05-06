@@ -10,10 +10,6 @@ namespace Javelin {
 	public:
 		CViewport() noexcept;
 		virtual ~CViewport() noexcept;
-		CViewport(const CViewport&) noexcept;
-		CViewport& operator=(const CViewport&) noexcept;
-		CViewport(CViewport&&) noexcept;
-		CViewport& operator=(CViewport&&) noexcept;
 
 		void Initialize(UINT width, UINT height) noexcept;
 		void Initialize(const D3D11_VIEWPORT& viewport) noexcept;

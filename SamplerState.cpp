@@ -12,6 +12,7 @@ CSamplerState::~CSamplerState() noexcept {
 	Cleanup();
 }
 
+/*
 CSamplerState::CSamplerState(const CSamplerState& sampler) {
 	operator=(sampler);
 }
@@ -36,7 +37,7 @@ CSamplerState& CSamplerState::operator=(CSamplerState&& sampler) {
 	Cleanup();
 	m_pSamplerState = sampler.m_pSamplerState;
 	return *this;
-}
+}*/
 
 void CSamplerState::Initialize(D3D11_TEXTURE_ADDRESS_MODE textureAddress, D3D11_FILTER filter,
 	const COLOR& borderColor, UINT maxAnisotropy) {

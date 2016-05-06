@@ -12,6 +12,7 @@ CInputLayout::~CInputLayout() noexcept {
 	Cleanup();
 }
 
+/*
 CInputLayout::CInputLayout(CInputLayout&& inputLayout) {
 	operator=(std::move(inputLayout));
 }
@@ -24,7 +25,7 @@ CInputLayout& CInputLayout::operator=(CInputLayout&& inputLayout) {
 	Cleanup();
 	m_pInputLayout = inputLayout.m_pInputLayout;
 	return *this;
-}
+}*/
 
 void CInputLayout::Initialize(const D3D11_INPUT_ELEMENT_DESC* pInputElementDescs,
 	UINT numElements, const CVertexShader& vertexShader) {

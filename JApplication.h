@@ -8,6 +8,7 @@
 #include "JTexture.h"
 #include <fstream>
 #include <memory>
+#include <list>
 
 namespace Javelin {
 
@@ -82,7 +83,7 @@ namespace Javelin {
 		static CRasterizerState			m_rasterizerState;
 		static CViewport				m_viewport;
 		static CBlendState				m_blendState;
-		static CPipeline				m_pipeline;
+		static std::list<const CPipeline*>	m_pipelineList;
 
 		static bool m_isSingleThreaded;
 		static bool m_multiSampleEnabled;
@@ -170,21 +171,15 @@ namespace Javelin {
 		static void ClearScreen(const CRenderTarget* renderTarget, const CDepthStencil* depthStencil,
 			const COLOR& color = COLOR(),
 			bool clearDepth = true, bool clearStencil = true);
-		static void SetDefaultRenderTarget(bool setDepthStencil = true);
 		static void SetDefaultRenderTarget(const CPipeline& pipeline, bool setDepthStencil = true);
-		static void SetDefaultDepthStencilState();
 		static void SetDefaultDepthStencilState(const CPipeline& pipeline);
-		static void SetDefaultRasterizerState();
 		static void SetDefaultRasterizerState(const CPipeline& pipeline);
-		static void SetDefaultViewport();
 		static void SetDefaultViewport(const CPipeline& pipeline);
-		static void SetDefaultBlendState(const COLOR& blendFactor = COLOR(0.0f, 0.0f, 0.0f, 0.0f), 
-			UINT sampleMask = 0xffffff);
 		static void SetDefaultBlendState(const CPipeline& pipeline, 
 			const COLOR& blendFactor = COLOR(0.0f, 0.0f, 0.0f, 0.0f), UINT sampleMask = 0xffffff);
-		static const CPipeline& GetDefaultPipeline() {
-			return m_pipeline;
-		}
+
+		static void AddPipeline(const CPipeline* pipeline);
+		static void ErasePipeline(const CPipeline* pipeline);
 
 		static void SetCullMode(D3D11_CULL_MODE mode);
 		static void SetFillMode(D3D11_FILL_MODE mode);

@@ -16,20 +16,18 @@ namespace Javelin {
 		ID3D11ShaderResourceView*		m_pShaderResourceView;
 		DescType						m_desc;
 		D3D11_SHADER_RESOURCE_VIEW_DESC	m_srvDesc;
+		bool							m_createSRV;
 
 		HRESULT CreateTexture(const DescType& desc,
 			const D3D11_SUBRESOURCE_DATA* subResource);
 	public:
 		CTexture() noexcept;
 		virtual ~CTexture() noexcept;
-		CTexture(const CTexture<TextureType>& texture);
-		CTexture& operator=(const CTexture<TextureType>& texture);
-		CTexture(CTexture<TextureType>&& texture);
-		CTexture& operator=(CTexture<TextureType>&& texture);
 
 		void Initialize(const DescType& desc,
 			const D3D11_SHADER_RESOURCE_VIEW_DESC* srvDesc,
-			const D3D11_SUBRESOURCE_DATA* subResource);
+			const D3D11_SUBRESOURCE_DATA* subResource,
+			bool createSRV);
 		void Cleanup() noexcept;
 
 		TextureType* GetTexture() const noexcept {

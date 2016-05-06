@@ -3,6 +3,7 @@
 #include "JVertexAndIndexBuffer.h"
 
 namespace Javelin {
+	/*
 	template <typename BufferType, UINT BindFlag>
 	CVertexAndIndexBuffer<BufferType, BindFlag>::CVertexAndIndexBuffer(const CVertexAndIndexBuffer& buffer) {
 		operator=(buffer);
@@ -35,7 +36,7 @@ namespace Javelin {
 		CBuffer::operator=(std::move(buffer));
 		m_bufferLength = buffer.m_bufferLength;
 		return *this;
-	}
+	}*/
 
 	template <typename BufferType, UINT BindFlag>
 	void CVertexAndIndexBuffer<BufferType, BindFlag>::Initialize(UINT bufferLength, const BufferType* buffer) {

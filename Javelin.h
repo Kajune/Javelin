@@ -6,6 +6,7 @@
 #include "JCamera.h"
 #include "JConstantBuffer.h"
 #include "JConstantBuffer.hpp"
+#include "JCubeTexture.h"
 #include "JDepthStencil.h"
 #include "JDepthStencilState.h"
 #include "JGlobal.h"

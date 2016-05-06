@@ -11,10 +11,6 @@ namespace Javelin {
 	public:
 		CDepthStencilState() noexcept;
 		virtual ~CDepthStencilState() noexcept;
-		CDepthStencilState(const CDepthStencilState&);
-		CDepthStencilState& operator=(const CDepthStencilState&);
-		CDepthStencilState(CDepthStencilState&&);
-		CDepthStencilState& operator=(CDepthStencilState&&);
 
 		void Initialize(const D3D11_DEPTH_STENCIL_DESC& rsDesc);
 		void Cleanup() noexcept;

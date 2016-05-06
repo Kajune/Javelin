@@ -1,4 +1,3 @@
-Texture2D tex : register(t0);
 SamplerState smp : register(s0);
 
 cbuffer cbNeverChanges : register(b0) {
@@ -10,8 +9,10 @@ cbuffer cbChangesEveryFrame : register(b1) {
 	float3 Light;
 };
 
+static const int numInstance = 64;
+
 cbuffer cbChangesEveryObject :register(b2) {
-	matrix World;
+	matrix World[numInstance];
 };
 
 struct VS_INPUT {
@@ -34,10 +35,10 @@ struct PS_INPUT {
 	float2 Tex : TEXTURE;
 };
 
-GS_INPUT VS(VS_INPUT input) {
+GS_INPUT VS(VS_INPUT input, uint instID : SV_InstanceID) {
 	GS_INPUT output;
 	float4 pos4 = float4(input.Pos, 1.0);
-	output.Pos = mul(mul(pos4, World), View);
+	output.Pos = mul(mul(pos4, World[instID % numInstance]), View);
 	output.Col = float4(input.Col, 1.0);
 	output.Tex = input.Tex;
 
@@ -68,6 +69,6 @@ void GS(triangle GS_INPUT input[3],
 
 float4 PS(PS_INPUT input) : SV_TARGET{
 	float3 light = Light - input.PosView;
-	float bright = 100 * dot(normalize(light), input.Norm) / pow(length(light), 2);
-	return saturate(bright * tex.Sample(smp, input.Tex));
+	float bright = 1000 * dot(normalize(light), input.Norm) / pow(length(light), 2);
+	return saturate(bright * input.Col);
 }

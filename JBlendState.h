@@ -12,10 +12,6 @@ namespace Javelin {
 	public:
 		CBlendState() noexcept;
 		virtual ~CBlendState() noexcept;
-		CBlendState(const CBlendState&);
-		CBlendState& operator=(const CBlendState&);
-		CBlendState(CBlendState&&);
-		CBlendState& operator=(CBlendState&&);
 
 		void Initialize();
 		void Cleanup() noexcept;

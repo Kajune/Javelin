@@ -25,10 +25,6 @@ namespace Javelin {
 	public:
 		CShader() noexcept;
 		virtual ~CShader() noexcept;
-		CShader(const CShader&) = delete;
-		CShader& operator=(const CShader&) = delete;
-		CShader(CShader&&);
-		CShader& operator=(CShader&&);
 
 		void Initialize(const std::string& filename, const std::string& functionName,
 			const std::string& shaderModel, UINT flag,

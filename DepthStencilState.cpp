@@ -12,6 +12,7 @@ CDepthStencilState::~CDepthStencilState() noexcept {
 	Cleanup();
 }
 
+/*
 CDepthStencilState::CDepthStencilState(const CDepthStencilState& DepthSteincilState) {
 	operator=(DepthSteincilState);
 }
@@ -36,7 +37,7 @@ CDepthStencilState& CDepthStencilState::operator=(CDepthStencilState&& DepthStei
 	m_pDepthSteincilState = DepthSteincilState.m_pDepthSteincilState;
 	m_DepthSteincilDesc = DepthSteincilState.m_DepthSteincilDesc;
 	return *this;
-}
+}*/
 
 void CDepthStencilState::Initialize(const D3D11_DEPTH_STENCIL_DESC& rsDesc) {
 	Cleanup();

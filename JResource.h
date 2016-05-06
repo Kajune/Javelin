@@ -8,10 +8,10 @@ namespace Javelin {
 	public:
 		CResource() = default;
 		virtual ~CResource() = default;
-		CResource(const CResource&) = default;
-		CResource(CResource&&) = default;
-		CResource& operator=(const CResource&) = default;
-		CResource& operator=(CResource&&) = default;
+		CResource(const CResource&) = delete;
+		CResource(CResource&&) = delete;
+		CResource& operator=(const CResource&) = delete;
+		CResource& operator=(CResource&&) = delete;
 	};
 
 }

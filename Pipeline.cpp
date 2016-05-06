@@ -18,8 +18,28 @@ CPipeline::CPipeline() noexcept :
 m_pDeviceContext(nullptr){
 }
 
-void CPipeline::Initialize(std::shared_ptr<ID3D11DeviceContext> pDeviceContext) {
+CPipeline::~CPipeline() noexcept {
+	Application::ErasePipeline(this);
+}
+
+void CPipeline::Initialize(std::shared_ptr<ID3D11DeviceContext> pDeviceContext,
+	bool useDefaultSettings) {
 	m_pDeviceContext = pDeviceContext;
+
+	m_useDefaultSettings = useDefaultSettings;
+	OnDefaultSettingsChanged();
+
+	Application::AddPipeline(this);
+}
+
+void CPipeline::OnDefaultSettingsChanged() const {
+	if (m_useDefaultSettings) {
+		Application::SetDefaultRenderTarget(*this);
+		Application::SetDefaultBlendState(*this);
+		Application::SetDefaultDepthStencilState(*this);
+		Application::SetDefaultRasterizerState(*this);
+		Application::SetDefaultViewport(*this);
+	}
 }
 
 void CPipeline::SetInputLayout(const CInputLayout* inputLayout) const {

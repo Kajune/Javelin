@@ -12,6 +12,7 @@ CRasterizerState::~CRasterizerState() noexcept {
 	Cleanup();
 }
 
+/*
 CRasterizerState::CRasterizerState(const CRasterizerState& rasterizerState) {
 	operator=(rasterizerState);
 }
@@ -36,7 +37,7 @@ CRasterizerState& CRasterizerState::operator=(CRasterizerState&& rasterizerState
 	m_pRasterizerState = rasterizerState.m_pRasterizerState;
 	m_rasterizerDesc = rasterizerState.m_rasterizerDesc;
 	return *this;
-}
+}*/
 
 void CRasterizerState::Initialize(const D3D11_RASTERIZER_DESC& rsDesc) {
 	Cleanup();

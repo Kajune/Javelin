@@ -14,7 +14,7 @@ CDepthStencilState Application::m_depthStencilState;
 CRasterizerState Application::m_rasterizerState;
 CViewport Application::m_viewport;
 CBlendState Application::m_blendState;
-CPipeline Application::m_pipeline;
+std::list<const CPipeline*>	Application::m_pipelineList;
 
 Application::CWindow Application::m_window;
 Application::CDevice Application::m_device;
@@ -78,6 +78,8 @@ int Application::Initialize(const std::string& appName, UINT width, UINT height,
 		WriteLog("バックバッファの初期化に失敗しました");
 		return -1;
 	}
+
+	m_pipelineList.clear();
 
 	WriteLog("アプリケーションの初期化が完了しました\n");
 
@@ -227,32 +229,16 @@ void Application::ClearScreen(const CRenderTarget* renderTarget, const CDepthSte
 	}
 }
 
-void Application::SetDefaultRenderTarget(bool setDepthStencil) {
-	SetDefaultRenderTarget(m_pipeline, setDepthStencil);
-}
-
 void Application::SetDefaultRenderTarget(const CPipeline& pipeline, bool setDepthStencil) {
 	pipeline.SetRenderTarget(1, &m_pRenderTargetView, setDepthStencil ? m_pDepthStencilView : nullptr);
-}
-
-void Application::SetDefaultDepthStencilState() {
-	SetDefaultDepthStencilState(m_pipeline);
 }
 
 void Application::SetDefaultDepthStencilState(const CPipeline& pipeline) {
 	pipeline.SetDepthStencilState(&m_depthStencilState, 0);
 }
 
-void Application::SetDefaultRasterizerState() {
-	SetDefaultRasterizerState(m_pipeline);
-}
-
 void Application::SetDefaultRasterizerState(const CPipeline& pipeline) {
 	pipeline.SetRasterizerState(&m_rasterizerState);
-}
-
-void Application::SetDefaultViewport() {
-	SetDefaultViewport(m_pipeline);
 }
 
 void Application::SetDefaultViewport(const CPipeline& pipeline) {
@@ -260,12 +246,19 @@ void Application::SetDefaultViewport(const CPipeline& pipeline) {
 	pipeline.SetViewports(1, vp);
 }
 
-void Application::SetDefaultBlendState(const COLOR& blendFactor, UINT sampleMask) {
-	SetDefaultBlendState(m_pipeline, blendFactor, sampleMask);
-}
-
 void Application::SetDefaultBlendState(const CPipeline& pipeline, const COLOR& blendFactor, UINT sampleMask) {
 	pipeline.SetBlendState(&m_blendState, blendFactor, sampleMask);
+}
+
+void Application::AddPipeline(const CPipeline* pipeline) {
+	if (std::find(m_pipelineList.begin(), m_pipelineList.end(), pipeline) != m_pipelineList.end()) {
+		return;
+	}
+	m_pipelineList.push_back(pipeline);
+}
+
+void Application::ErasePipeline(const CPipeline* pipeline) {
+	m_pipelineList.remove(pipeline);
 }
 
 void Application::SetCullMode(D3D11_CULL_MODE mode) {
@@ -397,15 +390,6 @@ void Application::InitBackBuffer() {
 
 	WriteLog("ビューポートの設定");
 	m_viewport.Initialize(descBackBuffer.Width, descBackBuffer.Height);
-
-	WriteLog("パイプラインの設定");
-	m_pipeline.Initialize(GetImmediateContext());
-
-	SetDefaultRenderTarget(m_use3D);
-	SetDefaultDepthStencilState();
-	SetDefaultRasterizerState();
-	SetDefaultViewport();
-	SetDefaultBlendState();
 }
 
 
@@ -469,6 +453,10 @@ LRESULT Application::MainWndProc(HWND hWnd, UINT msg, UINT wParam, LONG lParam) 
 
 			if (m_screenSizeCallback) {
 				m_screenSizeCallback(LOWORD(lParam), HIWORD(lParam));
+			}
+
+			for (auto& it : m_pipelineList) {
+				it->OnDefaultSettingsChanged();
 			}
 
 			m_isWindowSizeChanged = true;

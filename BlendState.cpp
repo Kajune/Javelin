@@ -23,6 +23,7 @@ CBlendState::~CBlendState() noexcept {
 	Cleanup();
 }
 
+/*
 CBlendState::CBlendState(const CBlendState& BlendState) {
 	operator=(BlendState);
 }
@@ -48,7 +49,7 @@ CBlendState& CBlendState::operator=(CBlendState&& BlendState) {
 	m_BlendDesc = BlendState.m_BlendDesc;
 	m_pBlendState = BlendState.m_pBlendState;
 	return *this;
-}
+}*/
 
 void CBlendState::Initialize() {
 	Cleanup();

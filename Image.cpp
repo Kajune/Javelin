@@ -14,6 +14,7 @@ CImage::~CImage() noexcept {
 	Cleanup();
 }
 
+/*
 CImage::CImage(const CImage& image) {
 	operator=(image);
 }
@@ -49,7 +50,7 @@ CImage& CImage::operator=(CImage&& image) {
 	m_texture = image.m_texture;
 	m_filename = image.m_filename;
 	return *this;
-}
+}*/
 
 void CImage::Initialize(const std::string& filename, D3DX11_IMAGE_LOAD_INFO* loadInfo) {
 	Cleanup();

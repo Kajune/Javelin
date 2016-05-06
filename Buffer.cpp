@@ -31,6 +31,7 @@ void CBuffer::Cleanup() noexcept {
 	SAFE_RELEASE(m_pBuffer);
 }
 
+/*
 CBuffer::CBuffer(const CBuffer& buffer) {
 	operator=(buffer);
 }
@@ -57,4 +58,4 @@ CBuffer& CBuffer::operator=(CBuffer&& buffer) {
 	m_pBuffer = buffer.m_pBuffer;
 	m_desc = buffer.m_desc;
 	return *this;
-}
+}*/

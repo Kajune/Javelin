@@ -17,6 +17,7 @@ namespace Javelin {
 		Cleanup();
 	}
 
+	/*
 	template <typename TextureType>
 	CTexture<TextureType>::CTexture(const CTexture<TextureType>& texture) {
 		operator=(texture);
@@ -49,7 +50,7 @@ namespace Javelin {
 		m_desc = texture.m_desc;
 		m_srvDesc = texture.m_srvDesc;
 		return *this;
-	}
+	}*/
 
 	template<>
 	HRESULT CTexture<ID3D11Texture1D>::CreateTexture(const DescType& desc,
@@ -92,35 +93,37 @@ namespace Javelin {
 	template <typename TextureType>
 	void CTexture<TextureType>::Initialize(const DescType& desc,
 		const D3D11_SHADER_RESOURCE_VIEW_DESC* srvDesc,
-		const D3D11_SUBRESOURCE_DATA* subResource) {
+		const D3D11_SUBRESOURCE_DATA* subResource,
+		bool createSRV) {
 		Cleanup();
 
 		m_desc = desc;
+		m_createSRV = createSRV;
 		if (srvDesc) {
 			m_srvDesc = *srvDesc;
 		} else {
 			m_srvDesc.Format = m_desc.Format;
 			m_srvDesc.ViewDimension = GetViewDimension<TextureType>::value;
 
-			m_srvDesc.Texture1D.MipLevels = 1;
+			m_srvDesc.Texture1D.MipLevels = m_desc.MipLevels;
 			m_srvDesc.Texture1D.MostDetailedMip = 0;
-			m_srvDesc.Texture1DArray.MipLevels = 1;
+			m_srvDesc.Texture1DArray.MipLevels = m_desc.MipLevels;
 			m_srvDesc.Texture1DArray.MostDetailedMip = 0;
 
-			m_srvDesc.Texture2D.MipLevels = 1;
+			m_srvDesc.Texture2D.MipLevels = m_desc.MipLevels;
 			m_srvDesc.Texture2D.MostDetailedMip = 0;
-			m_srvDesc.Texture2DArray.MipLevels = 1;
+			m_srvDesc.Texture2DArray.MipLevels = m_desc.MipLevels;
 			m_srvDesc.Texture2DArray.MostDetailedMip = 0;
 
 			m_srvDesc.Texture2DMSArray.ArraySize = 1;
 			m_srvDesc.Texture2DMSArray.FirstArraySlice = 0;
 
-			m_srvDesc.Texture3D.MipLevels = 1;
+			m_srvDesc.Texture3D.MipLevels = m_desc.MipLevels;
 			m_srvDesc.Texture3D.MostDetailedMip = 0;
 
-			m_srvDesc.TextureCube.MipLevels = 1;
+			m_srvDesc.TextureCube.MipLevels = m_desc.MipLevels;
 			m_srvDesc.TextureCube.MostDetailedMip = 0;
-			m_srvDesc.TextureCubeArray.MipLevels = 1;
+			m_srvDesc.TextureCubeArray.MipLevels = m_desc.MipLevels;
 			m_srvDesc.TextureCubeArray.MostDetailedMip = 0;
 		}
 		if (Application::GetDevice()) {
@@ -128,10 +131,13 @@ namespace Javelin {
 				Application::WriteLog("バッファの作成に失敗しました");
 				throw - 1;
 			}
-			if (FAILED(Application::GetDevice()->CreateShaderResourceView(m_pTexture,
-				&m_srvDesc, &m_pShaderResourceView))) {
-				Application::WriteLog("シェーダリソースビューの作成に失敗しました");
-				throw - 1;
+			if (m_createSRV) {
+				try {
+					Application::GetDevice()->CreateShaderResourceView(m_pTexture,
+						&m_srvDesc, &m_pShaderResourceView);
+				} catch (...) {
+					Application::WriteLog("シェーダリソースビューの作成に失敗しました");
+				}
 			}
 		} else {
 			Application::WriteLog("デバイスが見つかりませんでした");

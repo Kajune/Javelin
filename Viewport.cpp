@@ -8,6 +8,7 @@ CViewport::CViewport() noexcept {
 CViewport::~CViewport() noexcept {
 }
 
+/*
 CViewport::CViewport(const CViewport& viewport) noexcept {
 	operator=(viewport);
 }
@@ -24,7 +25,7 @@ CViewport::CViewport(CViewport&& viewport) noexcept {
 CViewport& CViewport::operator=(CViewport&& viewport) noexcept {
 	m_viewport = viewport.m_viewport;
 	return *this;
-}
+}*/
 
 void CViewport::Initialize(UINT width, UINT height) noexcept {
 	m_viewport.TopLeftX = 0.0f;

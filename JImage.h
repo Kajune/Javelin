@@ -16,10 +16,6 @@ namespace Javelin {
 	public:
 		CImage() noexcept;
 		virtual ~CImage() noexcept;
-		CImage(const CImage&);
-		CImage& operator=(const CImage&);
-		CImage(CImage&&);
-		CImage& operator=(CImage&&);
 
 		void Initialize(const std::string& filename, 
 			D3DX11_IMAGE_LOAD_INFO* loadInfo = nullptr);

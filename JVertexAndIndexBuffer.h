@@ -12,10 +12,6 @@ namespace Javelin {
 	public:
 		CVertexAndIndexBuffer() = default;
 		virtual ~CVertexAndIndexBuffer() = default;
-		CVertexAndIndexBuffer(const CVertexAndIndexBuffer&);
-		CVertexAndIndexBuffer& operator=(const CVertexAndIndexBuffer&);
-		CVertexAndIndexBuffer(CVertexAndIndexBuffer&&);
-		CVertexAndIndexBuffer& operator=(CVertexAndIndexBuffer&&);
 
 		void Initialize(UINT bufferLength, const BufferType* buffer);
 

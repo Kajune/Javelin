@@ -11,10 +11,6 @@ namespace Javelin {
 	public:
 		CSamplerState() noexcept;
 		virtual ~CSamplerState() noexcept;
-		CSamplerState(const CSamplerState&);
-		CSamplerState& operator=(const CSamplerState&);
-		CSamplerState(CSamplerState&&);
-		CSamplerState& operator=(CSamplerState&&);
 
 		void Initialize(const D3D11_SAMPLER_DESC& desc);
 		void Initialize(D3D11_TEXTURE_ADDRESS_MODE textureAddress, 

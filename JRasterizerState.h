@@ -11,10 +11,6 @@ namespace Javelin {
 	public:
 		CRasterizerState() noexcept;
 		virtual ~CRasterizerState() noexcept;
-		CRasterizerState(const CRasterizerState&);
-		CRasterizerState& operator=(const CRasterizerState&);
-		CRasterizerState(CRasterizerState&&);
-		CRasterizerState& operator=(CRasterizerState&&);
 
 		void Initialize(const D3D11_RASTERIZER_DESC& rsDesc);
 		void ApplyChange();
