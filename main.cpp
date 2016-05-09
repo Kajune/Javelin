@@ -3,7 +3,7 @@
 using namespace Javelin;
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
-	if (Application::Initialize("Javelin", 800, 600, true, 32)){
+	if (Application::Initialize("Javelin", 800, 600, true, 32)) {
 		Application::Cleanup();
 		return -1;
 	}
@@ -80,9 +80,10 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	CPixelShader ps;
 	ps.Initialize("shader.hlsl", "PS", "ps_4_0");
 
-	pipeline.SetVertexShader(&vs);
-	pipeline.SetGeometryShader(&gs);
-	pipeline.SetPixelShader(&ps);
+	CVertexShader vs_cube;
+	vs_cube.Initialize("shader.hlsl", "VS_CubeMap", "vs_4_0");
+	CGeometryShader gs_cube;
+	gs_cube.Initialize("shader.hlsl", "GS_CubeMap", "gs_4_0");
 
 	//
 	// 入力レイアウト
@@ -113,6 +114,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 
 	typedef struct {
 		XMFLOAT4X4 view;
+		XMFLOAT4X4 viewCube[6];
 		XMFLOAT3 light;
 		FLOAT dummy;
 	}cbChangesEveryFrame_t;
@@ -129,6 +131,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	pipeline.SetGeometryShaderConstantBuffer(0, &cbNeverChanges);
 
 	pipeline.SetVertexShaderConstantBuffer(1, &cbChangesEveryFrame);
+	pipeline.SetGeometryShaderConstantBuffer(1, &cbChangesEveryFrame);
 	pipeline.SetPixelShaderConstantBuffer(1, &cbChangesEveryFrame);
 
 	pipeline.SetVertexShaderConstantBuffer(2, &cbChangesEveryObject);
@@ -158,18 +161,36 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 
 	CCubeTexture cubeTex;
 	cubeTex.Initialize(512, 512, DXGI_FORMAT_R16G16B16A16_FLOAT, 9);
+	CViewport viewportCube;
+	viewportCube.Initialize(512, 512);
 
 	while (Application::MainLoop() == 0) {
 		Application::ClearScreen(COLOR(0.0f, 0.125f, 0.3f, 1.0f));
-		
+		Application::ClearScreen(cubeTex);
+
 		//
 		// カメラ配置
 		//
+		cbChangesEveryFrame_t cbobj;
 		cam.SetCamPos(XMFLOAT3(0, 10, -30));
 		cam.SetTargetPos(XMFLOAT3(0, 0, 0));
-		cbChangesEveryFrame.UpdateBufferValue(cbChangesEveryFrame_t{ cam.GetView(), XMFLOAT3(1, 1, -2) }, 
-			Application::GetImmediateContext());
-
+		cbobj.view = cam.GetView();
+		cam.SetCamPos(XMFLOAT3(0, 0, 0));
+		cam.SetTargetPos(XMFLOAT3(1, 0, 0));
+		cbobj.viewCube[0] = cam.GetView();
+		cam.SetTargetPos(XMFLOAT3(-1, 0, 0));
+		cbobj.viewCube[1] = cam.GetView();
+		cam.SetTargetPos(XMFLOAT3(0, 1, 0));
+		cbobj.viewCube[2] = cam.GetView();
+		cam.SetTargetPos(XMFLOAT3(0, -1, 0));
+		cbobj.viewCube[3] = cam.GetView();
+		cam.SetTargetPos(XMFLOAT3(0, 0, 1));
+		cbobj.viewCube[4] = cam.GetView();
+		cam.SetTargetPos(XMFLOAT3(0, 0, -1));
+		cbobj.viewCube[5] = cam.GetView();
+		cbobj.light = XMFLOAT3(1, 1, -2);
+		cbChangesEveryFrame.UpdateBufferValue(cbobj, Application::GetImmediateContext());
+		
 		//
 		// オブジェクト配置
 		//
@@ -199,15 +220,30 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 		//
 		// 描画(1Pass)
 		//
+
+		pipeline.SetVertexShader(&vs);
+		pipeline.SetGeometryShader(&gs);
+		pipeline.SetPixelShader(&ps);
+
 		pipeline.DrawInstanced(vb.GetBufferLength(), num_inst);
 
 		//
 		// 描画(2Pass)
 		//
 
+		pipeline.SetVertexShader(&vs_cube);
+		pipeline.SetGeometryShader(&gs_cube);
+		pipeline.SetRenderTarget(cubeTex);
+		pipeline.SetViewports(viewportCube);
+
+		pipeline.DrawInstanced(vb.GetBufferLength(), num_inst);
+
 		//
 		// 描画(3Pass)
 		//
+
+		Application::SetDefaultRenderTarget(pipeline);
+		Application::SetDefaultViewport(pipeline);
 		
 		Application::Present();
 		Application::SetWindowTitle(std::to_string(Javelin::Application::GetFPS()));

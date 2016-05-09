@@ -14,6 +14,7 @@ namespace Javelin {
 
 	class CRenderTarget;
 	class CDepthStencil;
+	class CCubeTexture;
 
 	class Application final {
 		Application() = delete;
@@ -169,6 +170,9 @@ namespace Javelin {
 		static void ClearScreen(const COLOR& color = COLOR(),
 			bool clearDepth = true, bool clearStencil = true);
 		static void ClearScreen(const CRenderTarget* renderTarget, const CDepthStencil* depthStencil,
+			const COLOR& color = COLOR(),
+			bool clearDepth = true, bool clearStencil = true);
+		static void ClearScreen(const CCubeTexture& cubeTexture,
 			const COLOR& color = COLOR(),
 			bool clearDepth = true, bool clearStencil = true);
 		static void SetDefaultRenderTarget(const CPipeline& pipeline, bool setDepthStencil = true);

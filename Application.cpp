@@ -4,6 +4,7 @@
 #include "JUtility.h"
 #include "JRenderTarget.h"
 #include "JDepthStencil.h"
+#include "JCubeTexture.h"
 
 using namespace Javelin;
 
@@ -229,6 +230,15 @@ void Application::ClearScreen(const CRenderTarget* renderTarget, const CDepthSte
 	}
 }
 
+void Application::ClearScreen(const CCubeTexture& cubeTexture,
+	const COLOR& color, bool clearDepth, bool clearStencil) {
+	m_device.GetImmediateContext()->
+		ClearRenderTargetView(cubeTexture.GetRenderTargetView(), color.ary.rgba);
+	UINT clearFlag = (clearDepth ? D3D11_CLEAR_DEPTH : 0) | (clearStencil ? D3D11_CLEAR_STENCIL : 0);
+	m_device.GetImmediateContext()->
+		ClearDepthStencilView(cubeTexture.GetDepthStencilView(), clearFlag, 1.0f, 0);
+}
+
 void Application::SetDefaultRenderTarget(const CPipeline& pipeline, bool setDepthStencil) {
 	pipeline.SetRenderTarget(1, &m_pRenderTargetView, setDepthStencil ? m_pDepthStencilView : nullptr);
 }
@@ -242,8 +252,7 @@ void Application::SetDefaultRasterizerState(const CPipeline& pipeline) {
 }
 
 void Application::SetDefaultViewport(const CPipeline& pipeline) {
-	const CViewport* vp[] = { &m_viewport };
-	pipeline.SetViewports(1, vp);
+	pipeline.SetViewports(m_viewport);
 }
 
 void Application::SetDefaultBlendState(const CPipeline& pipeline, const COLOR& blendFactor, UINT sampleMask) {

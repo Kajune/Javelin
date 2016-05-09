@@ -25,6 +25,7 @@ namespace Javelin {
 	class CDepthStencil;
 	class CDepthStencilState;
 	class CBlendState;
+	class CCubeTexture;
 
 	class CPipeline final {
 		std::shared_ptr<ID3D11DeviceContext> m_pDeviceContext;
@@ -88,6 +89,7 @@ namespace Javelin {
 
 		//RS
 		void SetRasterizerState(const CRasterizerState* pRasterizerState) const;
+		void SetViewports(const CViewport& viewport) const;
 		void SetViewports(UINT numViewports, CViewport const* ppViewports[]) const;
 
 		//PS
@@ -99,10 +101,12 @@ namespace Javelin {
 		void SetPixelShaderSamplerState(UINT slot, const CSamplerState* samplerState) const;
 
 		//OM
+		void SetRenderTarget(const CRenderTarget& renderTarget, const CDepthStencil* depthStencil) const;
 		void SetRenderTarget(UINT numRenderTargets, CRenderTarget const* ppRenderTarget[],
 			const CDepthStencil* depthStencil) const;
 		void SetRenderTarget(UINT numRenderTargets, ID3D11RenderTargetView* ppRenderTarget[],
 			ID3D11DepthStencilView* pDepthStencil) const;
+		void SetRenderTarget(const CCubeTexture& cubeTexture) const;
 		void SetDepthStencilState(const CDepthStencilState* depthStencilState, UINT stencilRef) const;
 		void SetBlendState(const CBlendState* pBlendState, 
 			const COLOR& blendFactor = COLOR(0.0f, 0.0f, 0.0f, 0.0f), UINT sampleMask = 0xffffff) const;

@@ -11,6 +11,7 @@
 #include "JBlendState.h"
 #include "JShaderResourceView.h"
 #include "JSamplerState.h"
+#include "JCubeTexture.h"
 
 using namespace Javelin;
 
@@ -180,6 +181,15 @@ void CPipeline::SetRasterizerState(const CRasterizerState* rasterizerState) cons
 	m_pDeviceContext->RSSetState(rasterizerState ? rasterizerState->GetRasterizerState() : nullptr);
 }
 
+void CPipeline::SetViewports(const CViewport& viewport) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	m_pDeviceContext->RSSetViewports(1, viewport.GetViewport());
+}
+
 void CPipeline::SetViewports(UINT numViewports, const CViewport* viewports[]) const {
 	if (!m_pDeviceContext) {
 		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
@@ -228,6 +238,11 @@ void CPipeline::SetPixelShaderSamplerState(UINT slot, const CSamplerState* sampl
 	m_pDeviceContext->PSSetSamplers(slot, 1, smps);
 }
 
+void CPipeline::SetRenderTarget(const CRenderTarget& renderTarget, const CDepthStencil* depthStencil) const {
+	const CRenderTarget* rts[] = { &renderTarget };
+	SetRenderTarget(1, rts, depthStencil);
+}
+
 void CPipeline::SetRenderTarget(UINT numRenderTargets, CRenderTarget const* renderTarget[],
 	const CDepthStencil* depthStencil) const{
 	if (numRenderTargets == 1) {
@@ -250,6 +265,11 @@ void CPipeline::SetRenderTarget(UINT numRenderTargets, ID3D11RenderTargetView* r
 		return;
 	}
 	m_pDeviceContext->OMSetRenderTargets(numRenderTargets, renderTarget, pDepthStencil);
+}
+
+void CPipeline::SetRenderTarget(const CCubeTexture& cubeTexture) const {
+	ID3D11RenderTargetView* rtvs_cube[] = { cubeTexture.GetRenderTargetView() };
+	SetRenderTarget(1, rtvs_cube, cubeTexture.GetDepthStencilView());
 }
 
 void CPipeline::SetDepthStencilState(const CDepthStencilState* depthStencilState, UINT stencilRef) const {
