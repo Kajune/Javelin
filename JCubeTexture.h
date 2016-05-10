@@ -5,7 +5,7 @@
 
 namespace Javelin {
 
-	class CCubeTexture : CShaderResourceView {
+	class CCubeTexture : public CShaderResourceView {
 		CRenderTarget m_renderTarget;
 		CDepthStencil m_depthStencil;
 	public:

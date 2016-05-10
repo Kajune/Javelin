@@ -67,7 +67,61 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	};
 	vb.Initialize(array_length(pVertices), pVertices);
 
-	pipeline.SetVertexBuffer(0, &vb);
+	//
+	//　球の頂点バッファ
+	//
+
+	typedef struct {
+		XMFLOAT3 pos;
+		XMFLOAT3 norm;
+		XMFLOAT2 tex;
+	}vertex_sphere;
+
+	CVertexBuffer<vertex_sphere> vbSphere;
+	vertex_sphere pVerticesSphere[] = {
+		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
+
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
+
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
+
+		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
+
+		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+	};
+	vbSphere.Initialize(array_length(pVerticesSphere), pVerticesSphere);
 
 	//
 	// シェーダ
@@ -85,6 +139,11 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	CGeometryShader gs_cube;
 	gs_cube.Initialize("shader.hlsl", "GS_CubeMap", "gs_4_0");
 
+	CVertexShader vs_sphere;
+	vs_sphere.Initialize("shader.hlsl", "VS_Sphere", "vs_4_0");
+	CPixelShader ps_sphere;
+	ps_sphere.Initialize("shader.hlsl", "PS_Sphere", "ps_4_0");
+
 	//
 	// 入力レイアウト
 	//
@@ -97,7 +156,14 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	CInputLayout layout;
 	layout.Initialize(inputDesc, array_length(inputDesc), vs);
 
-	pipeline.SetInputLayout(&layout);
+	D3D11_INPUT_ELEMENT_DESC inputDescSphere[] = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, sizeof(XMFLOAT3), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXTURE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, sizeof(XMFLOAT3) * 2, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+	CInputLayout layoutSphere;
+	layoutSphere.Initialize(inputDescSphere, array_length(inputDescSphere), vs_sphere);
+
 	pipeline.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	//
@@ -115,9 +181,13 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	typedef struct {
 		XMFLOAT4X4 view;
 		XMFLOAT4X4 viewCube[6];
+		XMFLOAT3 viewPos;
+		float dummy1;
 		XMFLOAT3 light;
-		FLOAT dummy;
+		float dummy2;
 	}cbChangesEveryFrame_t;
+
+	OutputDebugString(std::to_string(sizeof(cbChangesEveryFrame_t)).c_str());
 
 	constexpr int num_inst = 64;
 	CConstantBuffer<XMFLOAT4X4> cbNeverChanges;
@@ -128,6 +198,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	cbChangesEveryFrame.Initialize();
 	cbChangesEveryObject.Initialize();
 
+	pipeline.SetVertexShaderConstantBuffer(0, &cbNeverChanges);
 	pipeline.SetGeometryShaderConstantBuffer(0, &cbNeverChanges);
 
 	pipeline.SetVertexShaderConstantBuffer(1, &cbChangesEveryFrame);
@@ -172,8 +243,10 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 		// カメラ配置
 		//
 		cbChangesEveryFrame_t cbobj;
-		cam.SetCamPos(XMFLOAT3(0, 10, -30));
+		auto viewPos = XMFLOAT3(0, 10, -30);
+		cam.SetCamPos(viewPos);
 		cam.SetTargetPos(XMFLOAT3(0, 0, 0));
+		cbobj.viewPos = viewPos;
 		cbobj.view = cam.GetView();
 		cam.SetCamPos(XMFLOAT3(0, 0, 0));
 		cam.SetTargetPos(XMFLOAT3(1, 0, 0));
@@ -188,7 +261,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 		cbobj.viewCube[4] = cam.GetView();
 		cam.SetTargetPos(XMFLOAT3(0, 0, -1));
 		cbobj.viewCube[5] = cam.GetView();
-		cbobj.light = XMFLOAT3(1, 1, -2);
+		cbobj.light = XMFLOAT3(0, 5, -5);
 		cbChangesEveryFrame.UpdateBufferValue(cbobj, Application::GetImmediateContext());
 		
 		//
@@ -221,6 +294,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 		// 描画(1Pass)
 		//
 
+		pipeline.SetInputLayout(&layout);
+		pipeline.SetVertexBuffer(0, &vb);
+
 		pipeline.SetVertexShader(&vs);
 		pipeline.SetGeometryShader(&gs);
 		pipeline.SetPixelShader(&ps);
@@ -233,6 +309,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 
 		pipeline.SetVertexShader(&vs_cube);
 		pipeline.SetGeometryShader(&gs_cube);
+		pipeline.SetPixelShaderResource(0, nullptr);
 		pipeline.SetRenderTarget(cubeTex);
 		pipeline.SetViewports(viewportCube);
 
@@ -244,6 +321,18 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 
 		Application::SetDefaultRenderTarget(pipeline);
 		Application::SetDefaultViewport(pipeline);
+
+		pipeline.SetInputLayout(&layoutSphere);
+		pipeline.SetVertexBuffer(0, &vbSphere);
+
+		pipeline.SetVertexShader(&vs_sphere);
+		pipeline.SetGeometryShader(nullptr);
+		pipeline.SetPixelShader(&ps_sphere);
+
+		pipeline.SetPixelShaderResource(0, &cubeTex);
+
+		pipeline.Draw(vbSphere.GetBufferLength());
+
 		
 		Application::Present();
 		Application::SetWindowTitle(std::to_string(Javelin::Application::GetFPS()));

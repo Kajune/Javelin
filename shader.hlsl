@@ -7,6 +7,7 @@ cbuffer cbNeverChanges : register(b0) {
 cbuffer cbChangesEveryFrame : register(b1) {
 	matrix View;
 	matrix ViewCube[6];
+	float3 ViewPos;
 	float3 Light;
 };
 
@@ -70,7 +71,7 @@ float4 PS(PS_INPUT input) : SV_TARGET{
 }
 
 //
-//　キューブ描画
+//　キューブマップ描画
 //
 
 struct VS_OUTPUT_CUBEMAP {
@@ -114,4 +115,59 @@ void GS_CubeMap(triangle VS_OUTPUT_CUBEMAP In[3],
 		}
 		CubeMapStream.RestartStrip();
 	}
+}
+
+//
+//　球体描画
+//
+
+TextureCube TexCube;
+
+struct VS_INPUT_SPHERE {
+	float3 Pos	: POSITION;
+	float3 Norm	: NORMAL;
+	float2 Tex	: TEXTURE;
+};
+
+struct PS_INPUT_SPHERE {
+	float4 Pos	: SV_POSITION;
+	float3 PosView : POSVIEW;
+	float3 Norm : NORMAL;
+	float2 Tex	: TEXTURE;
+	float3 ViewWorld	: POSWORLD;
+	float3 NormWorld	: NORMWORLD;
+};
+
+PS_INPUT_SPHERE VS_Sphere(VS_INPUT_SPHERE input) {
+	PS_INPUT_SPHERE output;
+
+	float4 pos4 = mul(float4(input.Pos, 1.0), View);
+	output.PosView = pos4.xyz / pos4.w;
+	output.Pos = mul(pos4, Projection);
+	output.Norm = mul(input.Norm, (float3x3)View);
+
+	output.Tex = input.Tex;
+	output.ViewWorld = input.Pos - ViewPos;
+	output.NormWorld = input.Norm;
+
+	return output;
+}
+
+float lighting(float3 PosView, float3 Norm, float3 L) {
+	// 光源ベクトル
+	float3 light = L - PosView;
+	// 距離
+	float  leng = length(light);
+	// 明るさ
+	return 1000 * dot(normalize(light), normalize(Norm)) / pow(leng, 2);
+}
+
+float4 PS_Sphere(PS_INPUT_SPHERE input) : SV_TARGET{
+	float bright = lighting(input.PosView, input.Norm, Light.xyz);
+	float3 E = normalize(input.ViewWorld);
+	float3 N = normalize(input.NormWorld);
+	float3 R = reflect(E, N);
+	float4 envMap = TexCube.Sample(smp, R);
+
+	return saturate(envMap + bright);
 }
