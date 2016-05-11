@@ -19,7 +19,6 @@ void Application::CDevice::Initialize(
 		D3D_FEATURE_LEVEL_10_1,
 		D3D_FEATURE_LEVEL_11_0,
 	};
-	D3D_FEATURE_LEVEL pFeatureLevel[array_length(FeatuerLevels)];
 
 	UINT flag = m_isSingleThreaded ? D3D11_CREATE_DEVICE_SINGLETHREADED : 0;
 #if defined(DEBUG) || defined(_DEBUG)
@@ -29,7 +28,7 @@ void Application::CDevice::Initialize(
 	WriteLog("デバイスの作成");
 	if (FAILED(D3D11CreateDevice(nullptr, driverType, nullptr, flag, 
 		FeatuerLevels, array_length(FeatuerLevels), 
-		D3D11_SDK_VERSION, &m_pD3D11Device, pFeatureLevel, &m_pDeviceContext))) {
+		D3D11_SDK_VERSION, &m_pD3D11Device, &m_supportedFeatureLevel, &m_pDeviceContext))) {
 		WriteLog("デバイスの作成に失敗しました");
 		throw -1;
 	}

@@ -18,11 +18,11 @@ namespace Javelin {
 
 		void SetBlendDesc(const D3D11_BLEND_DESC& blendDesc) noexcept;
 		void SetEnableBlend(bool value, UINT renderTarget = 0) noexcept;
-		void SetAlignmentBlend(const COLOR& color, UINT renderTarget = 0) noexcept;
-		void SetAddBlend(const COLOR& color, UINT renderTarget = 0) noexcept;
-		void SetSubtractBlend(const COLOR& color, UINT renderTarget = 0) noexcept;
-		void SetMultipleBlend(const COLOR& color, UINT renderTarget = 0) noexcept;
-		void SetFactorBlend(const COLOR& color, UINT renderTarget = 0) noexcept;
+		void SetAlignmentBlend(UINT renderTarget = 0) noexcept;
+		void SetAddBlend(UINT renderTarget = 0) noexcept;
+		void SetSubtractBlend(UINT renderTarget = 0) noexcept;
+		void SetMultipleBlend(UINT renderTarget = 0) noexcept;
+		void SetFactorBlend(UINT renderTarget = 0) noexcept;
 		void ApplyChange();
 
 		D3D11_BLEND_DESC& GetBlendDesc() noexcept {

@@ -86,6 +86,8 @@ namespace Javelin {
 		void SetComputeShaderResource(UINT slot, const CShaderResourceView* shaderResourceView) const;
 
 		//SO
+		void SetStreamOutputTarget(const CBuffer* buffer, UINT offset) const;
+		void SetStreamOutputTarget(UINT numTargets, CBuffer* const buffer[], UINT offset[]) const;
 
 		//RS
 		void SetRasterizerState(const CRasterizerState* pRasterizerState) const;

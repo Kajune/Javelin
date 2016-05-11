@@ -130,6 +130,30 @@ void CGeometryShader::Initialize(const std::string& filename, const std::string&
 	}
 }
 
+void CGeometryShader::Initialize(const std::string& filename, const std::string& functionName,
+	const std::string& shaderModel, 
+	D3D11_SO_DECLARATION_ENTRY decl[], UINT numDecl,
+	UINT strides[], UINT numStrides, UINT flag,
+	const D3D10_SHADER_MACRO* pMacroDefines, LPD3D10INCLUDE pInclude) {
+	Cleanup();
+
+	if (Application::GetDevice()) {
+		CShader::Initialize(filename, functionName, shaderModel, flag, pMacroDefines, pInclude);
+		if (FAILED(Application::GetDevice()->CreateGeometryShaderWithStreamOutput(
+			m_pBlob->GetBufferPointer(), m_pBlob->GetBufferSize(),
+			decl, numDecl, strides, numStrides,
+			Application::GetFeatureLevel() >= D3D_FEATURE_LEVEL_11_0 ? 
+				D3D11_SO_NO_RASTERIZED_STREAM : 0, nullptr, &m_pShader))) {
+			Application::WriteLog(std::string("シェーダオブジェクトの作成に失敗しました：") +
+				"\n\t" + filename + "\n\t" + functionName + "\n\t" + shaderModel);
+			throw - 1;
+		}
+	} else {
+		Application::WriteLog("デバイスが見つかりませんでした");
+		throw - 1;
+	}
+}
+
 void CGeometryShader::Cleanup() noexcept {
 	SAFE_RELEASE(m_pShader);
 }

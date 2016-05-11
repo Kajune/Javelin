@@ -12,6 +12,7 @@
 #include "JShaderResourceView.h"
 #include "JSamplerState.h"
 #include "JCubeTexture.h"
+#include "JBuffer.h"
 
 using namespace Javelin;
 
@@ -170,6 +171,30 @@ void CPipeline::SetComputeShaderResource(UINT slot, const CShaderResourceView* s
 	ID3D11ShaderResourceView* srvs[] = { shaderResourceView ?
 		shaderResourceView->GetShaderResourceView() : nullptr };
 	m_pDeviceContext->CSSetShaderResources(slot, 1, srvs);
+}
+
+void CPipeline::SetStreamOutputTarget(const CBuffer* buffer, UINT offset) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	ID3D11Buffer* bufferList[] = { buffer ? buffer->GetBuffer() : nullptr };
+	UINT offsetList[] = { offset };
+	m_pDeviceContext->SOSetTargets(1, bufferList, offsetList);
+}
+
+void CPipeline::SetStreamOutputTarget(UINT numTargets, CBuffer* const buffer[], UINT offset[]) const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	std::vector<ID3D11Buffer*> bufferList;
+	for (UINT i = 0; i < numTargets; i++) {
+		bufferList.push_back(buffer[i] ? buffer[i]->GetBuffer() : nullptr);
+	}
+	m_pDeviceContext->SOSetTargets(numTargets, bufferList.data(), offset);
 }
 
 void CPipeline::SetRasterizerState(const CRasterizerState* rasterizerState) const {

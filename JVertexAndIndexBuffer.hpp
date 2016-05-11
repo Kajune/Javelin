@@ -39,13 +39,14 @@ namespace Javelin {
 	}*/
 
 	template <typename BufferType, UINT BindFlag>
-	void CVertexAndIndexBuffer<BufferType, BindFlag>::Initialize(UINT bufferLength, const BufferType* buffer) {
+	void CVertexAndIndexBuffer<BufferType, BindFlag>::Initialize(
+		UINT bufferLength, const BufferType* buffer, bool useAsStreamOutputTarget) {
 		m_bufferLength = bufferLength;
 
 		D3D11_BUFFER_DESC desc{};
-		desc.Usage = buffer ? D3D11_USAGE_IMMUTABLE : D3D11_USAGE_DEFAULT;
+		desc.Usage = buffer && !useAsStreamOutputTarget ? D3D11_USAGE_IMMUTABLE : D3D11_USAGE_DEFAULT;
 		desc.ByteWidth = sizeof(BufferType) * bufferLength;
-		desc.BindFlags = BindFlag;
+		desc.BindFlags = BindFlag | (useAsStreamOutputTarget ? D3D11_BIND_STREAM_OUTPUT : 0);
 		desc.CPUAccessFlags = 0;
 		desc.MiscFlags = 0;
 		desc.StructureByteStride = 0;
@@ -58,7 +59,8 @@ namespace Javelin {
 	}
 
 	template <typename BufferType, UINT BindFlag>
-	void CDynamicVertexAndIndexBuffer<BufferType, BindFlag>::Initialize(UINT bufferLength, const BufferType* buffer) {
+	void CDynamicVertexAndIndexBuffer<BufferType, BindFlag>::Initialize(
+		UINT bufferLength, const BufferType* buffer) {
 		m_bufferLength = bufferLength;
 
 		D3D11_BUFFER_DESC desc{};

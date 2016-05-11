@@ -1,173 +1,120 @@
+cbuffer cb : register(b0) {
+	matrix View;
+	matrix Projection;
+
+	float2 ParticleSize;
+	float2 dummy;
+	float Time;
+};
+
+static float3 Acceleration = float3(0.0, -9.885, 0.0);
+
+Texture2D TexParticle : register(t0);
+Texture2D TexFloor : register(t1);
 SamplerState smp : register(s0);
 
-cbuffer cbNeverChanges : register(b0) {
-	matrix Projection;
+//
+//　パーティクル座標更新
+//
+
+struct GS_INPUT_PARTICLE {
+	float3 Position		: POSITION;
+	float3 Velocity		: NORMAL;
+	float3 VelocityFirst: TEXCOORD0;
 };
 
-cbuffer cbChangesEveryFrame : register(b1) {
-	matrix View;
-	matrix ViewCube[6];
-	float3 ViewPos;
-	float3 Light;
-};
+GS_INPUT_PARTICLE VS_Particle_Vertex(GS_INPUT_PARTICLE In) {
+	return In;
+}
 
-static const int numInstance = 64;
+[maxvertexcount(1)]
+void GS_Particle_Vertex(point GS_INPUT_PARTICLE In[1],
+	inout PointStream<GS_INPUT_PARTICLE> ParticleStream) {
+	GS_INPUT_PARTICLE output;
+	output.VelocityFirst = In[0].VelocityFirst;
+	output.Velocity = Acceleration * Time + In[0].Velocity;
+	output.Position = 0.5 * Acceleration * Time * Time + In[0].Velocity * Time + In[0].Position;
+	if (output.Position.y < 0) {
+		if (abs(output.Velocity.y) < 0.1) {
+			output.Position = float3(0.0, 0.1, 0.0);
+			output.Velocity = In[0].VelocityFirst;
+		} else {
+			output.Velocity.y = abs(output.Velocity.y) / 1.2;
+		}
+	}
+	ParticleStream.Append(output);
+}
 
-cbuffer cbChangesEveryObject :register(b2) {
-	matrix World[numInstance];
-};
-
-struct VS_INPUT {
-	float3 Pos : POSITION;
-	float3 Col : COLOR;
-};
-
-struct GS_INPUT {
-	float4 Pos : SV_POSITION;
-	float4 Col : COLOR;
-};
+//
+//　パーティクル描画
+//
 
 struct PS_INPUT {
-	float4 Pos : SV_POSITION;
-	float3 PosView : POSVIEW;
-	float3 Norm : NORMAL;
-	float4 Col : COLOR;
-};
-
-GS_INPUT VS(VS_INPUT input, uint instID : SV_InstanceID) {
-	GS_INPUT output;
-	float4 pos4 = float4(input.Pos, 1.0);
-	output.Pos = mul(mul(pos4, World[instID % numInstance]), View);
-	output.Col = float4(input.Col, 1.0);
-
-	return output;
-}
-
-[maxvertexcount(3)]
-void GS(triangle GS_INPUT input[3],
-	inout TriangleStream<PS_INPUT> TriStream) {
-	PS_INPUT output;
-
-	float3 faceEdge = input[0].Pos.xyz / input[0].Pos.w;
-	float3 faceEdgeA = (input[1].Pos.xyz / input[1].Pos.w) - faceEdge;
-	float3 faceEdgeB = (input[2].Pos.xyz / input[2].Pos.w) - faceEdge;
-	output.Norm = normalize(cross(faceEdgeA, faceEdgeB));
-
-	for (int i = 0; i < 3; i++) {
-		output.PosView = input[i].Pos.xyz / input[i].Pos.w;
-		output.Pos = mul(input[i].Pos, Projection);
-		output.Col = input[i].Col;
-
-		TriStream.Append(output);
-	}
-
-	TriStream.RestartStrip();
-}
-
-float4 PS(PS_INPUT input) : SV_TARGET{
-	float3 light = Light - input.PosView;
-	float bright = 1000 * dot(normalize(light), input.Norm) / pow(length(light), 2);
-	return saturate(bright * input.Col);
-}
-
-//
-//　キューブマップ描画
-//
-
-struct VS_OUTPUT_CUBEMAP {
-	float4 Pos : SV_POSITION;
-	float4 Col : COLOR;
-};
-
-struct GS_OUTPUT_CUBEMAP {
-	float4 Pos : SV_POSITION;
-	float3 PosView : POSVIEW;
-	float3 Norm : NORMAL;
-	float4 Col : COLOR;
-	uint RTIndex : SV_RenderTargetArrayIndex;
-};
-
-VS_OUTPUT_CUBEMAP VS_CubeMap(VS_INPUT input, uint instID : SV_InstanceID) {
-	VS_OUTPUT_CUBEMAP output;
-	output.Pos = mul(float4(input.Pos, 1.0), World[instID % numInstance]);
-	output.Col = float4(input.Col, 1.0);
-	return output;
-}
-
-[maxvertexcount(18)]
-void GS_CubeMap(triangle VS_OUTPUT_CUBEMAP In[3],
-	inout TriangleStream<GS_OUTPUT_CUBEMAP> CubeMapStream) {
-
-	for (int f = 0; f < 6; f++) {
-		GS_OUTPUT_CUBEMAP output;
-		float3 faceEdge = In[0].Pos.xyz / In[0].Pos.w;
-		float3 faceEdgeA = (In[1].Pos.xyz / In[1].Pos.w) - faceEdge;
-		float3 faceEdgeB = (In[2].Pos.xyz / In[2].Pos.w) - faceEdge;
-		output.Norm = normalize(cross(faceEdgeA, faceEdgeB));
-
-		output.RTIndex = f;
-		for (int v = 0; v < 3; v++) {
-			output.Pos = mul(In[v].Pos, ViewCube[f]);
-			output.PosView = In[v].Pos.xyz / In[v].Pos.w;
-			output.Pos = mul(output.Pos, Projection);
-			output.Col = In[v].Col;
-			CubeMapStream.Append(output);
-		}
-		CubeMapStream.RestartStrip();
-	}
-}
-
-//
-//　球体描画
-//
-
-TextureCube TexCube;
-
-struct VS_INPUT_SPHERE {
-	float3 Pos	: POSITION;
-	float3 Norm	: NORMAL;
-	float2 Tex	: TEXTURE;
-};
-
-struct PS_INPUT_SPHERE {
 	float4 Pos	: SV_POSITION;
-	float3 PosView : POSVIEW;
-	float3 Norm : NORMAL;
 	float2 Tex	: TEXTURE;
-	float3 ViewWorld	: POSWORLD;
-	float3 NormWorld	: NORMWORLD;
 };
 
-PS_INPUT_SPHERE VS_Sphere(VS_INPUT_SPHERE input) {
-	PS_INPUT_SPHERE output;
+static const float2 signList[] = {
+	float2(-1.0, 1.0),
+	float2(1.0, 1.0),
+	float2(-1.0, -1.0),
+	float2(1.0, -1.0),
+};
 
-	float4 pos4 = mul(float4(input.Pos, 1.0), View);
-	output.PosView = pos4.xyz / pos4.w;
-	output.Pos = mul(pos4, Projection);
-	output.Norm = mul(input.Norm, (float3x3)View);
+static const float2 texList[] = {
+	float2(0.0, 0.0),
+	float2(1.0, 0.0),
+	float2(0.0, 1.0),
+	float2(1.0, 1.0),
+};
 
-	output.Tex = input.Tex;
-	output.ViewWorld = input.Pos - ViewPos;
-	output.NormWorld = input.Norm;
+[maxvertexcount(4)]
+void GS_Particle(point GS_INPUT_PARTICLE In[1],
+	inout TriangleStream<PS_INPUT> ParticleStream) {
+	float4 pos = mul(float4(In[0].Position, 1.0), View);
 
+	for (int i = 0; i < 4; i++) {
+		PS_INPUT output;
+		output.Pos = mul(pos + float4(ParticleSize * signList[i], 0.0, 0.0) * pos.w, Projection);
+		output.Tex = texList[i];
+		ParticleStream.Append(output);
+	}
+	ParticleStream.RestartStrip();
+}
+
+float4 PS_Particle(PS_INPUT input) : SV_Target{
+	return TexParticle.Sample(smp, input.Tex);
+}
+
+//
+//　床描画
+//
+
+static const float4 vertexList[] = {
+	float4(-2, 0, -2, 1),
+	float4(-2, 0, 2, 1),
+	float4(2, 0, 2, 1),
+	float4(2, 0, 2, 1),
+	float4(2, 0, -2, 1),
+	float4(-2, 0, -2, 1),
+};
+
+static const float2 texListFloor[] = {
+	float2(0, 1),
+	float2(0, 0),
+	float2(1, 0),
+	float2(1, 0),
+	float2(1, 1),
+	float2(0, 1),
+};
+
+PS_INPUT VS_Floor(uint vid : SV_VertexID) {
+	PS_INPUT output;
+	output.Pos = mul(mul(vertexList[vid], View), Projection);
+	output.Tex = texListFloor[vid];
 	return output;
 }
 
-float lighting(float3 PosView, float3 Norm, float3 L) {
-	// 光源ベクトル
-	float3 light = L - PosView;
-	// 距離
-	float  leng = length(light);
-	// 明るさ
-	return 1000 * dot(normalize(light), normalize(Norm)) / pow(leng, 2);
-}
-
-float4 PS_Sphere(PS_INPUT_SPHERE input) : SV_TARGET{
-	float bright = lighting(input.PosView, input.Norm, Light.xyz);
-	float3 E = normalize(input.ViewWorld);
-	float3 N = normalize(input.NormWorld);
-	float3 R = reflect(E, N);
-	float4 envMap = TexCube.Sample(smp, R);
-
-	return saturate(envMap + bright);
+float4 PS_Floor(PS_INPUT input) : SV_Target{
+	return TexFloor.Sample(smp, input.Tex) * 0.5;
 }

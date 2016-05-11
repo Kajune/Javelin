@@ -81,7 +81,7 @@ void CBlendState::SetEnableBlend(bool value, UINT renderTarget) noexcept {
 	m_BlendDesc.RenderTarget[renderTarget].BlendEnable = value;
 }
 
-void CBlendState::SetAlignmentBlend(const COLOR& color, UINT renderTarget) noexcept {
+void CBlendState::SetAlignmentBlend(UINT renderTarget) noexcept {
 	if (renderTarget >= GetBlendRenderTargetNum()) {
 		Application::WriteLog("CBlendState::SetAlignmentBlend renderTargetの値が不正です");
 		return;
@@ -95,7 +95,7 @@ void CBlendState::SetAlignmentBlend(const COLOR& color, UINT renderTarget) noexc
 	m_BlendDesc.RenderTarget[renderTarget].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 }
 
-void CBlendState::SetAddBlend(const COLOR& color, UINT renderTarget) noexcept {
+void CBlendState::SetAddBlend(UINT renderTarget) noexcept {
 	if (renderTarget >= GetBlendRenderTargetNum()) {
 		Application::WriteLog("CBlendState::SetAddBlend renderTargetの値が不正です");
 		return;
@@ -109,7 +109,7 @@ void CBlendState::SetAddBlend(const COLOR& color, UINT renderTarget) noexcept {
 	m_BlendDesc.RenderTarget[renderTarget].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 }
 
-void CBlendState::SetSubtractBlend(const COLOR& color, UINT renderTarget) noexcept {
+void CBlendState::SetSubtractBlend(UINT renderTarget) noexcept {
 	if (renderTarget >= GetBlendRenderTargetNum()) {
 		Application::WriteLog("CBlendState::SetSubtractBlend renderTargetの値が不正です");
 		return;
@@ -123,7 +123,7 @@ void CBlendState::SetSubtractBlend(const COLOR& color, UINT renderTarget) noexce
 	m_BlendDesc.RenderTarget[renderTarget].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 }
 
-void CBlendState::SetMultipleBlend(const COLOR& color, UINT renderTarget) noexcept {
+void CBlendState::SetMultipleBlend(UINT renderTarget) noexcept {
 	if (renderTarget >= GetBlendRenderTargetNum()) {
 		Application::WriteLog("CBlendState::SetMultipleBlend renderTargetの値が不正です");
 		return;
@@ -137,7 +137,7 @@ void CBlendState::SetMultipleBlend(const COLOR& color, UINT renderTarget) noexce
 	m_BlendDesc.RenderTarget[renderTarget].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 }
 
-void CBlendState::SetFactorBlend(const COLOR& color, UINT renderTarget) noexcept {
+void CBlendState::SetFactorBlend(UINT renderTarget) noexcept {
 	if (renderTarget >= GetBlendRenderTargetNum()) {
 		Application::WriteLog("CBlendState::SetFactorBlend renderTargetの値が不正です");
 		return;

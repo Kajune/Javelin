@@ -307,6 +307,14 @@ std::shared_ptr<ID3D11DeviceContext> Application::GetDeferredContext() {
 }
 
 //
+//　ユーティリティ
+//
+
+void Application::GenerateMips(const CShaderResourceView& srv) {
+	m_device.GetImmediateContext()->GenerateMips(srv.GetShaderResourceView());
+}
+
+//
 //　以下、内部実装
 //
 

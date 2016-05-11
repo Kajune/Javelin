@@ -13,7 +13,8 @@ namespace Javelin {
 		CVertexAndIndexBuffer() = default;
 		virtual ~CVertexAndIndexBuffer() = default;
 
-		void Initialize(UINT bufferLength, const BufferType* buffer);
+		void Initialize(UINT bufferLength, const BufferType* buffer,
+			bool useAsStreamOutputTarget = false);
 
 		UINT GetBufferLength() const noexcept {
 			return m_bufferLength;

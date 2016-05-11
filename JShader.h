@@ -42,8 +42,6 @@ namespace Javelin {
 	public:
 		CVertexShader() noexcept;
 		virtual ~CVertexShader() noexcept;
-		CVertexShader(CVertexShader&&);
-		CVertexShader& operator=(CVertexShader&&);
 
 		void Initialize(const std::string& filename, const std::string& functionName,
 			const std::string& shaderModel, UINT flag = ShaderCompileOption::RECOMMENDED, 
@@ -61,11 +59,15 @@ namespace Javelin {
 	public:
 		CGeometryShader() noexcept;
 		virtual ~CGeometryShader() noexcept;
-		CGeometryShader(CGeometryShader&&);
-		CGeometryShader& operator=(CGeometryShader&&);
 
 		void Initialize(const std::string& filename, const std::string& functionName,
 			const std::string& shaderModel, UINT flag = ShaderCompileOption::RECOMMENDED,
+			const D3D10_SHADER_MACRO* pMacroDefines = nullptr, LPD3D10INCLUDE pInclude = nullptr);
+		void Initialize(const std::string& filename, const std::string& functionName,
+			const std::string& shaderModel, 
+			D3D11_SO_DECLARATION_ENTRY decl[], UINT numDecl,
+			UINT strides[], UINT numStrides,
+			UINT flag = ShaderCompileOption::RECOMMENDED,
 			const D3D10_SHADER_MACRO* pMacroDefines = nullptr, LPD3D10INCLUDE pInclude = nullptr);
 		void Cleanup() noexcept;
 
@@ -80,8 +82,6 @@ namespace Javelin {
 	public:
 		CPixelShader() noexcept;
 		virtual ~CPixelShader() noexcept;
-		CPixelShader(CPixelShader&&);
-		CPixelShader& operator=(CPixelShader&&);
 
 		void Initialize(const std::string& filename, const std::string& functionName,
 			const std::string& shaderModel, UINT flag = ShaderCompileOption::RECOMMENDED,
@@ -99,8 +99,6 @@ namespace Javelin {
 	public:
 		CHullShader() noexcept;
 		virtual ~CHullShader() noexcept;
-		CHullShader(CHullShader&&);
-		CHullShader& operator=(CHullShader&&);
 
 		void Initialize(const std::string& filename, const std::string& functionName,
 			const std::string& shaderModel, UINT flag = ShaderCompileOption::RECOMMENDED,
@@ -118,8 +116,6 @@ namespace Javelin {
 	public:
 		CDomainShader() noexcept;
 		virtual ~CDomainShader() noexcept;
-		CDomainShader(CDomainShader&&);
-		CDomainShader& operator=(CDomainShader&&);
 
 		void Initialize(const std::string& filename, const std::string& functionName,
 			const std::string& shaderModel, UINT flag = ShaderCompileOption::RECOMMENDED,
@@ -137,8 +133,6 @@ namespace Javelin {
 	public:
 		CComputeShader() noexcept;
 		virtual ~CComputeShader() noexcept;
-		CComputeShader(CComputeShader&&);
-		CComputeShader& operator=(CComputeShader&&);
 
 		void Initialize(const std::string& filename, const std::string& functionName,
 			const std::string& shaderModel, UINT flag = ShaderCompileOption::RECOMMENDED,

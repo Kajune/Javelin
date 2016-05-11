@@ -51,6 +51,8 @@ namespace Javelin {
 			ID3D11DeviceContext*	m_pDeviceContext;
 			IDXGISwapChain*			m_pSwapChain;
 
+			D3D_FEATURE_LEVEL		m_supportedFeatureLevel;
+
 			DXGI_SWAP_CHAIN_DESC	m_desc;
 		public:
 			CDevice() noexcept;
@@ -74,6 +76,9 @@ namespace Javelin {
 			}
 			IDXGISwapChain* GetSwapChain() const noexcept {
 				return m_pSwapChain;
+			}
+			D3D_FEATURE_LEVEL GetFeatureLevel() const noexcept {
+				return m_supportedFeatureLevel;
 			}
 		}m_device;
 
@@ -201,6 +206,13 @@ namespace Javelin {
 		}
 		//遅延コンテキストを取得する。
 		static std::shared_ptr<ID3D11DeviceContext> GetDeferredContext();
-	};
 
+		//ユーティリティ
+		//サポートされた機能レベルを得る。
+		static D3D_FEATURE_LEVEL GetFeatureLevel() noexcept {
+			return m_device.GetFeatureLevel();
+		}
+		//ミップマップを生成する。
+		static void GenerateMips(const CShaderResourceView& srv);
+	};
 }
