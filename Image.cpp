@@ -14,8 +14,11 @@ CImage::~CImage() noexcept {
 	Cleanup();
 }
 
-/*
-CImage::CImage(const CImage& image) {
+CImage::CImage(const CImage& image) :
+m_pShaderResourceView(nullptr),
+m_imageLoadInfoUsed(false),
+m_loadFromTexture(false),
+m_texture(nullptr) {
 	operator=(image);
 }
 
@@ -24,6 +27,9 @@ CImage& CImage::operator=(const CImage& image) {
 		return *this;
 	}
 	Cleanup();
+	if (!image.m_pShaderResourceView) {
+		return *this;
+	}
 	if (image.m_loadFromTexture) {
 		Initialize(image.m_texture);
 	} else {
@@ -33,7 +39,11 @@ CImage& CImage::operator=(const CImage& image) {
 	return *this;
 }
 
-CImage::CImage(CImage&& image) {
+CImage::CImage(CImage&& image) :
+m_pShaderResourceView(nullptr),
+m_imageLoadInfoUsed(false),
+m_loadFromTexture(false),
+m_texture(nullptr) {
 	operator=(std::move(image));
 }
 
@@ -50,7 +60,7 @@ CImage& CImage::operator=(CImage&& image) {
 	m_texture = image.m_texture;
 	m_filename = image.m_filename;
 	return *this;
-}*/
+}
 
 void CImage::Initialize(const std::string& filename, D3DX11_IMAGE_LOAD_INFO* loadInfo) {
 	Cleanup();

@@ -12,6 +12,12 @@ namespace Javelin {
 		CBuffer() noexcept;
 		virtual ~CBuffer() noexcept;
 
+		CBuffer(const CBuffer&);
+		CBuffer& operator=(const CBuffer&);
+		CBuffer(CBuffer&&);
+		CBuffer& operator=(CBuffer&&);
+
+
 		void Initialize(const D3D11_BUFFER_DESC& desc, const D3D11_SUBRESOURCE_DATA* subResource);
 		void Cleanup() noexcept;
 

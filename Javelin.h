@@ -12,6 +12,8 @@
 #include "JGlobal.h"
 #include "JImage.h"
 #include "JInputLayout.h"
+#include "JMesh.h"
+#include "JMesh.hpp"
 #include "JMeshLoader.h"
 #include "JObjLoader.h"
 #include "JPipeline.h"

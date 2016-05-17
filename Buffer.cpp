@@ -31,8 +31,8 @@ void CBuffer::Cleanup() noexcept {
 	SAFE_RELEASE(m_pBuffer);
 }
 
-/*
-CBuffer::CBuffer(const CBuffer& buffer) {
+CBuffer::CBuffer(const CBuffer& buffer) :
+m_pBuffer(nullptr){
 	operator=(buffer);
 }
 
@@ -46,7 +46,8 @@ CBuffer& CBuffer::operator=(const CBuffer& buffer) {
 	return *this;
 }
 
-CBuffer::CBuffer(CBuffer&& buffer) {
+CBuffer::CBuffer(CBuffer&& buffer) :
+m_pBuffer(nullptr) {
 	operator=(std::move(buffer));
 }
 
@@ -58,4 +59,4 @@ CBuffer& CBuffer::operator=(CBuffer&& buffer) {
 	m_pBuffer = buffer.m_pBuffer;
 	m_desc = buffer.m_desc;
 	return *this;
-}*/
+}

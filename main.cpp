@@ -18,11 +18,21 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 
 	CMeshLoader<CObjLoader> loader;
 	loader.Initialize("cube.obj");
+	CMesh<> mesh;
+	mesh.Initialize(loader);
 
 	//
 	// シェーダ
 	//
 
+	CVertexShader vs;
+	CPixelShader ps;
+
+	vs.Initialize("shader.hlsl", "VS", "vs_4_0");
+	ps.Initialize("shader.hlsl", "PS", "ps_4_0");
+
+	pipeline.SetVertexShader(&vs);
+	pipeline.SetPixelShader(&ps);
 
 	//
 	// 入力レイアウト
@@ -31,9 +41,13 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	D3D11_INPUT_ELEMENT_DESC inputDesc[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, sizeof(XMFLOAT3), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, sizeof(XMFLOAT3) * 2, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, sizeof(XMFLOAT3) * 2, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 	CInputLayout layout;
+	layout.Initialize(inputDesc, array_length(inputDesc), vs);
+
+	pipeline.SetInputLayout(&layout);
+	pipeline.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	//
 	// カメラ設定
@@ -56,34 +70,24 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	//
 
 	typedef struct {
-		XMFLOAT4X4 view;
-		XMFLOAT4X4 Projection;
-		XMFLOAT2 ParticleSize;
-		XMFLOAT2 Dummy1;
-		float Time;
-		XMFLOAT3 Dummy2;
-	}cb_t;
+		XMFLOAT4X4 World;
+		XMFLOAT4X4 ViewProjection;
+	}cbObj_t;
 
-	CConstantBuffer<cb_t> cb;
-	cb.Initialize();
+	typedef struct {
+		COLOR diffuse;
+	}cbMat_t;
 
-	pipeline.SetVertexShaderConstantBuffer(0, &cb);
-	pipeline.SetGeometryShaderConstantBuffer(0, &cb);
+	CConstantBuffer<cbObj_t> cbObj;
+	CConstantBuffer<cbMat_t> cbMat;
+	cbObj.Initialize();
+	cbMat.Initialize();
 
-	cb_t cbobj;
-	cbobj.Projection = cam.GetProjection();
-	cbobj.ParticleSize = XMFLOAT2(0.04f, 0.04f);
+	pipeline.SetVertexShaderConstantBuffer(0, &cbObj);
+	pipeline.SetPixelShaderConstantBuffer(1, &cbMat);
 
-	//
-	// ウィンドウサイズ変更時のコールバック登録
-	//
-
-	Application::SetCallbackFuncWhenScreensizeChanged([&](UINT width, UINT height) {
-		cam.SetAspect((float)width / (float)height);
-		cbobj.Projection = cam.GetProjection();
-	});
-
-	UINT soTargetIndex = 0;
+	cbObj_t cbObjobj;
+	cbObjobj.ViewProjection = cam.GetViewProjection();
 
 	while (Application::MainLoop() == 0) {
 		Application::ClearScreen(COLOR(0.0f, 0.125f, 0.3f, 1.0f));
@@ -93,8 +97,23 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 		//
 		cam.SetCamPos(XMFLOAT3(0.0f, 3.0f, -3.0f));
 		cam.SetTargetPos(XMFLOAT3(0, 0, 0));
-		cbobj.view = cam.GetView();
-		cb.UpdateBufferValue(cbobj, Application::GetImmediateContext());	
+		cbObjobj.ViewProjection = cam.GetViewProjection();
+		auto mat = XMMatrixTranspose(XMMatrixIdentity());
+		XMStoreFloat4x4(&cbObjobj.World, mat);
+		cbObj.UpdateBufferValue(cbObjobj, Application::GetImmediateContext());
+
+		for (auto it = mesh.begin(); it != mesh.end(); it++) {
+			pipeline.SetVertexBuffer(0, &it->vertex);
+			pipeline.SetIndexBuffer(&it->index, 0);
+
+			cbMat_t mat;
+			mat.diffuse = mesh.GetMaterial(it).materialParam.diffuse;
+			cbMat.UpdateBufferValue(mat, Application::GetImmediateContext());
+
+			pipeline.SetPixelShaderResource(0, &mesh.GetMaterial(it).diffuseMap);
+
+			pipeline.DrawIndexed(it->index.GetBufferLength());
+		}
 		
 		Application::Present();
 		Application::SetWindowTitle(std::to_string(Javelin::Application::GetFPS()));

@@ -12,9 +12,13 @@ namespace Javelin {
 	public:
 		CVertexAndIndexBuffer() = default;
 		virtual ~CVertexAndIndexBuffer() = default;
+		CVertexAndIndexBuffer(const CVertexAndIndexBuffer&);
+		CVertexAndIndexBuffer& operator=(const CVertexAndIndexBuffer<BufferType, BindFlag>&);
+		CVertexAndIndexBuffer(CVertexAndIndexBuffer&&);
+		CVertexAndIndexBuffer& operator=(CVertexAndIndexBuffer<BufferType, BindFlag>&&);
 
 		void Initialize(UINT bufferLength, const BufferType* buffer,
-			bool useAsStreamOutputTarget = false);
+			bool immutable = false, bool useAsStreamOutputTarget = false);
 
 		UINT GetBufferLength() const noexcept {
 			return m_bufferLength;

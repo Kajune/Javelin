@@ -3,10 +3,11 @@
 #include "JVertexAndIndexBuffer.h"
 
 namespace Javelin {
-	/*
+	
 	template <typename BufferType, UINT BindFlag>
-	CVertexAndIndexBuffer<BufferType, BindFlag>::CVertexAndIndexBuffer(const CVertexAndIndexBuffer& buffer) {
-		operator=(buffer);
+	CVertexAndIndexBuffer<BufferType, BindFlag>::CVertexAndIndexBuffer(const CVertexAndIndexBuffer& buffer) :
+	CBuffer(buffer){
+		m_bufferLength = buffer.m_bufferLength;
 	}
 
 	template <typename BufferType, UINT BindFlag>
@@ -22,8 +23,9 @@ namespace Javelin {
 	}
 
 	template <typename BufferType, UINT BindFlag>
-	CVertexAndIndexBuffer<BufferType, BindFlag>::CVertexAndIndexBuffer(CVertexAndIndexBuffer&& buffer) {
-		operator=(std::move(buffer));
+	CVertexAndIndexBuffer<BufferType, BindFlag>::CVertexAndIndexBuffer(CVertexAndIndexBuffer&& buffer) :
+	CBuffer(std::move(buffer)){
+		m_bufferLength = buffer.m_bufferLength;
 	}
 
 	template <typename BufferType, UINT BindFlag>
@@ -36,15 +38,16 @@ namespace Javelin {
 		CBuffer::operator=(std::move(buffer));
 		m_bufferLength = buffer.m_bufferLength;
 		return *this;
-	}*/
+	}
 
 	template <typename BufferType, UINT BindFlag>
 	void CVertexAndIndexBuffer<BufferType, BindFlag>::Initialize(
-		UINT bufferLength, const BufferType* buffer, bool useAsStreamOutputTarget) {
+		UINT bufferLength, const BufferType* buffer, 
+		bool immutable, bool useAsStreamOutputTarget) {
 		m_bufferLength = bufferLength;
 
 		D3D11_BUFFER_DESC desc{};
-		desc.Usage = buffer && !useAsStreamOutputTarget ? D3D11_USAGE_IMMUTABLE : D3D11_USAGE_DEFAULT;
+		desc.Usage = immutable && buffer && !useAsStreamOutputTarget ? D3D11_USAGE_IMMUTABLE : D3D11_USAGE_DEFAULT;
 		desc.ByteWidth = sizeof(BufferType) * bufferLength;
 		desc.BindFlags = BindFlag | (useAsStreamOutputTarget ? D3D11_BIND_STREAM_OUTPUT : 0);
 		desc.CPUAccessFlags = 0;
