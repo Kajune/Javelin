@@ -38,6 +38,9 @@ namespace Javelin {
 		const D3DX11_IMAGE_INFO& GetImageInfo() const noexcept {
 			return m_imageInfo;
 		}
+		operator bool() const override {
+			return m_pShaderResourceView != nullptr;
+		}
 
 		//‰æ‘œ‚ğ•ªŠ„‚µ‚Ä“Ç‚İ‚Ş
 /*		static void LoadDivImage(std::string filename,

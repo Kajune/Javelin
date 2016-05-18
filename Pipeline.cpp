@@ -263,15 +263,15 @@ void CPipeline::SetPixelShaderSamplerState(UINT slot, const CSamplerState* sampl
 	m_pDeviceContext->PSSetSamplers(slot, 1, smps);
 }
 
-void CPipeline::SetRenderTarget(const CRenderTarget& renderTarget, const CDepthStencil* depthStencil) const {
-	const CRenderTarget* rts[] = { &renderTarget };
+void CPipeline::SetRenderTarget(const CRenderTarget* renderTarget, const CDepthStencil* depthStencil) const {
+	const CRenderTarget* rts[] = { renderTarget };
 	SetRenderTarget(1, rts, depthStencil);
 }
 
 void CPipeline::SetRenderTarget(UINT numRenderTargets, CRenderTarget const* renderTarget[],
 	const CDepthStencil* depthStencil) const{
 	if (numRenderTargets == 1) {
-		auto ptr = renderTarget[0]->GetRenderTargetView();
+		auto ptr = renderTarget[0] ? renderTarget[0]->GetRenderTargetView() : nullptr;
 		SetRenderTarget(1, &ptr, depthStencil ? depthStencil->GetDepthStencilView() : nullptr);
 	} else {
 		std::vector<ID3D11RenderTargetView*> rtvs;

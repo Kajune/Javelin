@@ -21,6 +21,9 @@ namespace Javelin {
 		ID3D11SamplerState* GetSamplerState() const noexcept {
 			return m_pSamplerState;
 		}
+		operator bool() const override {
+			return m_pSamplerState != nullptr;
+		}
 	};
 
 }

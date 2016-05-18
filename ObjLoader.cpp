@@ -64,7 +64,7 @@ void CObjLoader::mtllib(commandIt begin, commandIt end) {
 		Application::WriteLog("コマンド数が足りません");
 		throw - 1;
 	}
-	LoadMaterial(*begin);
+	LoadMaterial(m_directory + *begin);
 }
 
 void CObjLoader::g(commandIt begin, commandIt end) {
@@ -116,43 +116,44 @@ void CObjLoader::f(commandIt begin, commandIt end) {
 	std::vector<index_t> index;
 	while (begin != end) {
 		std::vector<std::string> token;
-		Split(*begin, token, "/");
+		Split(*begin, token, '/');
 		index_t temp;
 		std::fill_n(temp.value, 3, 0);
 		for (UINT i = 0; i < token.size(); i++) {
 			temp.value[i] = std::stoi(token.at(i));
 		}
-		index.push_back(temp);
+		index.emplace_back(temp);
+
 		begin++;
 	}
 
-	//
-	// TODO: 面を生成できるように回す順番を考慮する必要がある
-	//
-	for (UINT i = 0; i < index.size(); i++) {
-		if (m_vertexCache.find(index.at(i).value[0]) != m_vertexCache.end()) {
-			if (m_vertexCache.at(index.at(i).value[0]).find(index.at(i).value[1]) 
-				!= m_vertexCache.at(index.at(i).value[0]).end()) {
-				if (m_vertexCache.at(index.at(i).value[0]).at(index.at(i).value[1]).find(index.at(i).value[2]) 
-					!= m_vertexCache.at(index.at(i).value[0]).at(index.at(i).value[1]).end()) {
-					(*m_objectList)[m_currentObject][m_currentMaterial].indexList.push_back(
-						m_vertexCache.at(index.at(i).value[0]).at(index.at(i).value[1]).at(index.at(i).value[2]));
-					continue;
+	for (UINT i = 1; i < index.size() - 1; i++) {
+		for (auto j : {(UINT)0, i, i + 1}) {
+			auto& indexList = (*m_objectList)[m_currentObject][m_currentMaterial].indexList;
+			auto& vertexList = (*m_objectList)[m_currentObject][m_currentMaterial].vertexList;
+
+			if (m_vertexCache.find(index.at(j).value[0]) != m_vertexCache.end()) {
+				auto& it = m_vertexCache.at(index.at(j).value[0]);
+				if (it.find(index.at(j).value[1]) != it.end()) {
+					auto& it2 = it.at(index.at(j).value[1]);
+					if (it2.find(index.at(j).value[2]) != it2.end()) {
+						indexList.emplace_back(it2.at(index.at(j).value[2]));
+						continue;
+					}
 				}
 			}
+
+			m_vertexCache[index.at(j).value[0]][index.at(j).value[1]][index.at(j).value[2]] =
+				(*m_objectList)[m_currentObject][m_currentMaterial].vertexList.size();
+
+			vertex_t vertex;
+			vertex.position = m_positionList.at(index.at(j).value[0]);
+			vertex.texel = m_texelList.at(index.at(j).value[1]);
+			vertex.normal = m_normalList.at(index.at(j).value[2]);
+			vertexList.emplace_back(vertex);
+
+			indexList.emplace_back(vertexList.size() - 1);
 		}
-
-		m_vertexCache[index.at(i).value[0]][index.at(i).value[1]][index.at(i).value[2]] =
-			(*m_objectList)[m_currentObject][m_currentMaterial].vertexList.size();
-
-		vertex_t vertex;
-		vertex.position = m_positionList.at(index.at(i).value[0]);
-		vertex.texel = m_texelList.at(index.at(i).value[1]);
-		vertex.normal = m_normalList.at(index.at(i).value[2]);
-		(*m_objectList)[m_currentObject][m_currentMaterial].vertexList.emplace_back(vertex);
-
-		(*m_objectList)[m_currentObject][m_currentMaterial].indexList.push_back(
-			(*m_objectList)[m_currentObject][m_currentMaterial].vertexList.size() - 1);
 	}
 }
 
@@ -200,27 +201,27 @@ void CObjLoader::Ni(commandIt begin, commandIt end) {
 }
 
 void CObjLoader::map_Kd(commandIt begin, commandIt end) {
-	(*m_materialList)[m_currentMaterial].diffuseMap = *begin;
+	(*m_materialList)[m_currentMaterial].diffuseMap = m_directory + *begin;
 }
 
 void CObjLoader::map_Ks(commandIt begin, commandIt end) {
-	(*m_materialList)[m_currentMaterial].specularMap = *begin;
+	(*m_materialList)[m_currentMaterial].specularMap = m_directory + *begin;
 }
 
 void CObjLoader::map_Ka(commandIt begin, commandIt end) {
-	(*m_materialList)[m_currentMaterial].ambientMap = *begin;
+	(*m_materialList)[m_currentMaterial].ambientMap = m_directory + *begin;
 }
 
 void CObjLoader::map_Bump(commandIt begin, commandIt end) {
-	(*m_materialList)[m_currentMaterial].bumpMap = *begin;
+	(*m_materialList)[m_currentMaterial].bumpMap = m_directory + *begin;
 }
 
 void CObjLoader::map_D(commandIt begin, commandIt end) {
-	(*m_materialList)[m_currentMaterial].opacityMap = *begin;
+	(*m_materialList)[m_currentMaterial].opacityMap = m_directory + *begin;
 }
 
 void CObjLoader::refl(commandIt begin, commandIt end) {
-	(*m_materialList)[m_currentMaterial].reflectionMap = *begin;
+	(*m_materialList)[m_currentMaterial].reflectionMap = m_directory + *begin;
 }
 
 void CObjLoader::LoadMaterial(const std::string& filename) {
@@ -235,7 +236,7 @@ void CObjLoader::LoadMaterial(const std::string& filename) {
 	int index = 0;
 	while (std::getline(ifs, str)) {
 		std::vector<std::string> token;
-		Javelin::Split(str, token, " ");
+		Javelin::Split(str, token, ' ');
 
 		if (token.empty() || token.at(0) == "#") {
 			index++;
@@ -261,6 +262,15 @@ void CObjLoader::Load(const std::string& filename,
 
 	m_objectList = objectList;
 	m_materialList = materialList;
+
+	{
+		m_directory.clear();
+		std::vector<std::string> token;
+		Javelin::Split(filename, token, "/");
+		for (UINT i = 0; i < token.size() - 1; i++) {
+			m_directory.append(token.at(i) + '/');
+		}
+	}
 
 	std::ifstream ifs(filename);
 

@@ -27,6 +27,8 @@ namespace Javelin {
 
 		std::map<UINT, std::map<UINT, std::map<UINT, UINT>>>	m_vertexCache;
 
+		std::string	m_directory;
+
 		void mtllib(commandIt begin, commandIt end);
 		void g(commandIt begin, commandIt end);
 		void usemtl(commandIt begin, commandIt end);

@@ -44,13 +44,13 @@ CDepthStencil& CDepthStencil::operator=(CDepthStencil&& DepthStencil) {
 	return *this;
 }*/
 
-void CDepthStencil::Initialize(UINT width, UINT height, UINT mipLevels) {
+void CDepthStencil::Initialize(UINT width, UINT height) {
 
 	D3D11_TEXTURE2D_DESC desc{};
 	desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT_R32_TYPELESS;
-	desc.MipLevels = mipLevels;
-	desc.MiscFlags = mipLevels > 0 ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
+	desc.MipLevels = 1;
+	desc.MiscFlags = 0;
 	desc.Width = width;
 	desc.Height = height;
 	desc.SampleDesc.Count = 1;
@@ -59,11 +59,11 @@ void CDepthStencil::Initialize(UINT width, UINT height, UINT mipLevels) {
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 
-	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 	srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
 	srvDesc.ViewDimension = D3D_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = mipLevels;
 	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = -1;
 
 	Initialize(desc, &srvDesc, nullptr, true);
 }
@@ -78,8 +78,8 @@ void CDepthStencil::Initialize(const DescType& desc,
 	if (dsvDesc) {
 		m_dsvDesc = *dsvDesc;
 	} else {
-		m_dsvDesc.Format = m_desc.Format;
-		m_dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+		m_dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+		m_dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		m_dsvDesc.Flags = 0;
 		m_dsvDesc.Texture2D.MipSlice = 0;
 	}

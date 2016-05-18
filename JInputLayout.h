@@ -19,6 +19,9 @@ namespace Javelin {
 		ID3D11InputLayout* GetInputLayout() const noexcept {
 			return m_pInputLayout;
 		}
+		operator bool() const override {
+			return m_pInputLayout != nullptr;
+		}
 	};
 
 }

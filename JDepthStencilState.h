@@ -18,6 +18,9 @@ namespace Javelin {
 		ID3D11DepthStencilState* GetDepthStencilState() const noexcept {
 			return m_pDepthSteincilState;
 		}
+		operator bool() const override {
+			return m_pDepthSteincilState != nullptr;
+		}
 	};
 
 }

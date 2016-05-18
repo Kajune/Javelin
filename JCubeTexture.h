@@ -23,6 +23,9 @@ namespace Javelin {
 		ID3D11DepthStencilView* GetDepthStencilView() const noexcept {
 			return m_depthStencil.GetDepthStencilView();
 		}
+		operator bool() const override {
+			return m_renderTarget && m_depthStencil;
+		}
 	};
 
 }

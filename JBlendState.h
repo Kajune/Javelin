@@ -36,6 +36,9 @@ namespace Javelin {
 		ID3D11BlendState* GetBlendState() const noexcept {
 			return m_pBlendState;
 		}
+		operator bool() const override {
+			return m_pBlendState != nullptr;
+		}
 	};
 
 }

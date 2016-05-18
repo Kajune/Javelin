@@ -25,4 +25,7 @@ namespace Javelin {
 		std::vector<std::string>& splitedStr,
 		const std::string& delim = ",",
 		bool allowEmptyElement = false);
+	extern void Split(const std::string& str,
+		std::vector<std::string>& splitedStr,
+		char delim = ',', bool allowEmptyElement = false);
 }

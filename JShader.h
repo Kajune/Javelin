@@ -34,6 +34,9 @@ namespace Javelin {
 		ID3DBlob* GetBlob() const noexcept {
 			return m_pBlob;
 		}
+		operator bool() const override {
+			return m_pBlob != nullptr;
+		}
 	};
 
 	class CVertexShader : public CShader {
@@ -50,6 +53,9 @@ namespace Javelin {
 
 		ID3D11VertexShader* GetShader() const noexcept {
 			return m_pShader;
+		}
+		operator bool() const override {
+			return m_pShader != nullptr && CShader::operator bool();
 		}
 	};
 
@@ -74,6 +80,9 @@ namespace Javelin {
 		ID3D11GeometryShader* GetShader() const noexcept {
 			return m_pShader;
 		}
+		operator bool() const override {
+			return m_pShader != nullptr && CShader::operator bool();
+		}
 	};
 
 	class CPixelShader : public CShader {
@@ -90,6 +99,9 @@ namespace Javelin {
 
 		ID3D11PixelShader* GetShader() const noexcept {
 			return m_pShader;
+		}
+		operator bool() const override {
+			return m_pShader != nullptr && CShader::operator bool();
 		}
 	};
 
@@ -108,6 +120,9 @@ namespace Javelin {
 		ID3D11HullShader* GetShader() const noexcept {
 			return m_pShader;
 		}
+		operator bool() const override {
+			return m_pShader != nullptr && CShader::operator bool();
+		}
 	};
 
 	class CDomainShader : public CShader {
@@ -125,6 +140,9 @@ namespace Javelin {
 		ID3D11DomainShader* GetShader() const noexcept {
 			return m_pShader;
 		}
+		operator bool() const override {
+			return m_pShader != nullptr && CShader::operator bool();
+		}
 	};
 
 	class CComputeShader : public CShader {
@@ -141,6 +159,9 @@ namespace Javelin {
 
 		ID3D11ComputeShader* GetShader() const noexcept {
 			return m_pShader;
+		}
+		operator bool() const override {
+			return m_pShader != nullptr && CShader::operator bool();
 		}
 	};
 

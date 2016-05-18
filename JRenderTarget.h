@@ -24,6 +24,9 @@ namespace Javelin {
 		ID3D11RenderTargetView* GetRenderTargetView() const noexcept {
 			return m_pRenderTargetView;
 		}
+		operator bool() const override {
+			return m_pRenderTargetView != nullptr && CTexture2D::operator bool();
+		}
 	};
 
 }

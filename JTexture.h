@@ -36,6 +36,9 @@ namespace Javelin {
 		ID3D11ShaderResourceView* GetShaderResourceView() const noexcept override {
 			return m_pShaderResourceView;
 		}
+		operator bool() const override {
+			return m_pTexture && m_pShaderResourceView;
+		}
 	};
 
 	using CTexture1D = CTexture<ID3D11Texture1D>;

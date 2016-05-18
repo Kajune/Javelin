@@ -34,3 +34,19 @@ void Javelin::Split(const std::string& str,
 		splitedStr.push_back(str.substr(current, found - current));
 	}
 }
+
+void Javelin::Split(const std::string& str,
+	std::vector<std::string>& splitedStr,
+	char delim, bool allowEmptyElement) {
+	size_t current = 0, found;
+	while ((found = str.find_first_of(delim, current)) != std::string::npos) {
+		if (current != found > 0 || allowEmptyElement) {
+			splitedStr.emplace_back(str, current, found - current);
+		}
+		current = found + 1;
+	}
+	if (current != found > 0 || allowEmptyElement) {
+		splitedStr.emplace_back(str, current, str.size() - current);
+	}
+}
+

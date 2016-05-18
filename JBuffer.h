@@ -24,6 +24,9 @@ namespace Javelin {
 		ID3D11Buffer* GetBuffer() const noexcept {
 			return m_pBuffer;
 		}
+		operator bool() const override {
+			return m_pBuffer != nullptr;
+		}
 	};
 
 }

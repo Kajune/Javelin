@@ -17,6 +17,9 @@ namespace Javelin {
 		const D3D11_VIEWPORT* GetViewport() const noexcept {
 			return &m_viewport;
 		}
+		operator bool() const override {
+			return true;
+		}
 	};
 
 }

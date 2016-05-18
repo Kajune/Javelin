@@ -103,7 +103,7 @@ namespace Javelin {
 		void SetPixelShaderSamplerState(UINT slot, const CSamplerState* samplerState) const;
 
 		//OM
-		void SetRenderTarget(const CRenderTarget& renderTarget, const CDepthStencil* depthStencil) const;
+		void SetRenderTarget(const CRenderTarget* renderTarget, const CDepthStencil* depthStencil) const;
 		void SetRenderTarget(UINT numRenderTargets, CRenderTarget const* ppRenderTarget[],
 			const CDepthStencil* depthStencil) const;
 		void SetRenderTarget(UINT numRenderTargets, ID3D11RenderTargetView* ppRenderTarget[],

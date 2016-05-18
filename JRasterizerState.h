@@ -22,6 +22,9 @@ namespace Javelin {
 		ID3D11RasterizerState* GetRasterizerState() const noexcept {
 			return m_pRasterizerState;
 		}
+		operator bool() const override {
+			return m_pRasterizerState != nullptr;
+		}
 	};
 
 }
