@@ -365,4 +365,12 @@ void CPipeline::DrawAuto() const {
 	m_pDeviceContext->DrawAuto();
 }
 
+void CPipeline::ClearState() const {
+	if (!m_pDeviceContext) {
+		Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
+		return;
+	}
+
+	m_pDeviceContext->ClearState();
+}
 

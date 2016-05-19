@@ -5,6 +5,7 @@
 #include "JRenderTarget.h"
 #include "JDepthStencil.h"
 #include "JCubeTexture.h"
+#include "JInput.h"
 
 using namespace Javelin;
 
@@ -88,6 +89,10 @@ int Application::Initialize(const std::string& appName, UINT width, UINT height,
 }
 
 int Application::MainLoop() noexcept {
+	//入力受付
+	InputKeyboard::GetKeyboardState();
+	InputMouse::GetMouseState();
+
 	//デバイスチェック
 	try {
 		CheckDeviceLost();
@@ -199,13 +204,15 @@ void Application::SaveScreenShot(const std::string& filename,
 //　パイプライン関係
 //
 
-HRESULT Application::Present(UINT vSyncInterval) {
+void Application::Present(UINT vSyncInterval) {
 	if (!GetSwapChain()) {
 		WriteLog("スワップチェインの原因不明な消失");
-		return E_FAIL;
+		return;
 	}
 
-	return GetSwapChain()->Present(vSyncInterval, 0);
+	static bool isOccluded = false;
+	isOccluded = GetSwapChain()->Present(vSyncInterval, isOccluded ? DXGI_PRESENT_TEST : 0) 
+		== DXGI_STATUS_OCCLUDED;
 }
 
 void Application::ClearScreen(const COLOR& color, bool clearDepth, bool clearStencil) {
@@ -312,6 +319,45 @@ std::shared_ptr<ID3D11DeviceContext> Application::GetDeferredContext() {
 
 void Application::GenerateMips(const CShaderResourceView& srv) {
 	m_device.GetImmediateContext()->GenerateMips(srv.GetShaderResourceView());
+}
+
+void Application::SetGamma(float value) {
+	SetGamma(COLOR(1.0f / value, 1.0f / value, 1.0f / value, 1.0f / value));
+}
+
+void Application::SetGamma(const COLOR& value, const COLOR& scale, const COLOR& offset) {
+	IDXGIOutput* pOutput;
+	if (FAILED(GetSwapChain()->GetContainingOutput(&pOutput))) {
+		WriteLog("アウトプットインターフェースの作成に失敗しました");
+		throw - 1;
+	}
+	BOOL isFullScreen = FALSE;
+	GetSwapChain()->GetFullscreenState(&isFullScreen, &pOutput);
+	if (!isFullScreen) {
+		WriteLog("ウィンドウモードではガンマ値を指定できません");
+		SAFE_RELEASE(pOutput);
+		return;
+	}
+
+	DXGI_GAMMA_CONTROL_CAPABILITIES gammacaps;
+	pOutput->GetGammaControlCapabilities(&gammacaps);
+
+	DXGI_GAMMA_CONTROL gamma;
+	gamma.Scale.Red = scale.col.r;
+	gamma.Scale.Green = scale.col.g;
+	gamma.Scale.Blue = scale.col.b;
+	gamma.Offset.Red = offset.col.r;
+	gamma.Offset.Green = offset.col.g;
+	gamma.Offset.Blue = offset.col.b;
+	for (UINT i = 0; i < gammacaps.NumGammaControlPoints; i++) {
+		gamma.GammaCurve[i].Red = pow(gammacaps.ControlPointPositions[i], value.col.r);
+		gamma.GammaCurve[i].Green = pow(gammacaps.ControlPointPositions[i], value.col.g);
+		gamma.GammaCurve[i].Blue = pow(gammacaps.ControlPointPositions[i], value.col.b);
+	}
+	if (FAILED(pOutput->SetGammaControl(&gamma))) {
+		WriteLog("ガンマ値の設定に失敗しました");
+	}
+	SAFE_RELEASE(pOutput);
 }
 
 //
@@ -479,9 +525,22 @@ LRESULT Application::MainWndProc(HWND hWnd, UINT msg, UINT wParam, LONG lParam) 
 			m_isWindowSizeChanged = true;
 			break;
 		case WM_DESTROY:
-			WriteLog("");
 			WriteLog("破棄命令が出されました");
 			PostQuitMessage(0);
+			break;
+		case WM_LBUTTONDBLCLK:
+			InputMouse::DoubleClicked(InputMouse::LEFT);
+			break;
+		case WM_RBUTTONDBLCLK:
+			InputMouse::DoubleClicked(InputMouse::RIGHT);
+			break;
+		case WM_MBUTTONDBLCLK:
+			InputMouse::DoubleClicked(InputMouse::MIDDLE);
+			break;
+		case WM_MOUSEWHEEL:
+			InputMouse::WheelRotated((short)HIWORD(wParam) / WHEEL_DELTA);
+			break;
+		case WM_DEVICECHANGE:
 			break;
 		default:
 			break;

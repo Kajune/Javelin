@@ -4,7 +4,7 @@
 using namespace Javelin;
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
-	if (Application::Initialize("Javelin", 800, 600, true, 32)) {
+	if (Application::Initialize("Javelin", 800, 600, true, 1)) {
 		Application::Cleanup();
 		return -1;
 	}
@@ -63,7 +63,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	//　深度バッファ
 	//
 
-	constexpr int smSize = 2048;
+	constexpr int smSize = 1024;
 	CDepthStencil dsShadow;
 	dsShadow.Initialize(smSize, smSize);
 
@@ -88,7 +88,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	//
 
 	CSamplerState sampler;
-	sampler.Initialize(D3D11_TEXTURE_ADDRESS_WRAP);
+	sampler.Initialize(D3D11_TEXTURE_ADDRESS_BORDER,
+		D3D11_FILTER_ANISOTROPIC, COLOR(1, 1, 1, 1));
 	pipeline.SetPixelShaderSamplerState(0, &sampler);
 
 	//
@@ -134,7 +135,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	pipeline.SetPixelShaderConstantBuffer(1, &cbMat);
 	pipeline.SetPixelShaderConstantBuffer(2, &cbLight);
 
-	XMFLOAT3 LightPos(5.0f, 5.0f, -5.0f);
+	XMFLOAT3 LightPos(2.0f, 2.0f, -2.0f);
 
 	cbLight_t cbLightValue;
 	cbLightValue.numLights = 1;
@@ -142,8 +143,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	cbLightValue.specularLight[0] = COLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	cbLightValue.diffuseLight[0] = COLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	cbLightValue.ambientLight = COLOR(0.5f, 0.5f, 0.5f, 1.0f).ary.rgba;
-	cbLightValue.lightPower = 20.0f;
+	cbLightValue.lightPower = 10.0f;
 
+	InputMouse::SetRelativeMode(true);
 
 	while (Application::MainLoop() == 0) {
 		Application::ClearScreen(COLOR(0.0f, 0.125f, 0.3f, 1.0f));
@@ -153,28 +155,62 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 		// カメラ配置
 		//
 		cbObj_t cbObjValue;
-		XMFLOAT3 eyePos(0.0f, 3.0f, -3.0f);
-		XMFLOAT3 targetPos(0, 0, 0);
+		static float angleYaw = 0.0f, anglePitch = 0.0f;
+		XMVECTOR frontVec = XMLoadFloat3(&XMFLOAT3(0, 0, 1));
+		frontVec = XMVector3Transform(frontVec, XMMatrixRotationRollPitchYaw(anglePitch, angleYaw, 0.0f));
+		XMVECTOR rightVec = XMLoadFloat3(&XMFLOAT3(1, 0, 0));
+		rightVec = XMVector3Transform(rightVec, XMMatrixRotationRollPitchYaw(anglePitch, angleYaw, 0.0f));
+		XMVECTOR upVec = XMLoadFloat3(&XMFLOAT3(0, 1, 0));
+		upVec = XMVector3Transform(upVec, XMMatrixRotationRollPitchYaw(anglePitch, angleYaw, 0.0f));
 
-		cam.SetCamPos(eyePos);
-		cam.SetTargetPos(targetPos);
+		angleYaw += InputMouse::GetRelativeMousePosX() / 500.0f;
+		anglePitch += InputMouse::GetRelativeMousePosY() / 500.0f;
+
+		static XMVECTOR eyePos;
+
+		constexpr float speed = 0.1f;
+		if (InputKeyboard::IsPressed('W')) {
+			eyePos += frontVec * speed;
+		}
+		if (InputKeyboard::IsPressed('S')) {
+			eyePos -= frontVec * speed;
+		}
+		if (InputKeyboard::IsPressed('D')) {
+			eyePos += rightVec * speed;
+		}
+		if (InputKeyboard::IsPressed('A')) {
+			eyePos -= rightVec * speed;
+		}
+		if (InputKeyboard::IsPressed(VK_LSHIFT)) {
+			eyePos += upVec * speed;
+		}
+		if (InputKeyboard::IsPressed(VK_LCONTROL)) {
+			eyePos -= upVec * speed;
+		}
+
+		XMFLOAT3 eyePosF, targetPosF;
+		XMStoreFloat3(&eyePosF, eyePos);
+		XMStoreFloat3(&targetPosF, eyePos + frontVec);
+
+		cam.SetCamPos(eyePosF);
+		cam.SetTargetPos(targetPosF);
+		cam.SetUpVec(XMFLOAT3(0, 1, 0));
 		cbObjValue.ViewProjection = cam.GetViewProjection();
 
 		camShadow.SetCamPos(LightPos);
-		camShadow.SetTargetPos(targetPos);
+		camShadow.SetTargetPos(targetPosF);
 		cbObjValue.ViewProjectionShadow = camShadow.GetViewProjection();
 
 		cbObj.UpdateBufferValue(cbObjValue, Application::GetImmediateContext());
 
 		auto mat = XMMatrixTranspose(
 			XMMatrixScaling(0.02f, 0.02f, 0.02f)
-			* XMMatrixRotationY(timeGetTime() / 1000.0f) 
-			* XMMatrixRotationX(J_PI / 12.0f));
+			* XMMatrixRotationY(timeGetTime() / 1000.0f));
 		XMStoreFloat4x4(&cbObjValue.World, mat);
 
 		cbObj.UpdateBufferValue(cbObjValue, Application::GetImmediateContext());
 
-		cbLightValue.eyePos = eyePos;
+		cbLightValue.eyePos = eyePosF;
 		cbLight.UpdateBufferValue(cbLightValue, Application::GetImmediateContext());
 
 		//

@@ -62,4 +62,10 @@ namespace Javelin {
 			return !(*this == rhs);
 		}
 	}COLOR;
+
+	class UnConstructable {
+		UnConstructable() = delete;
+		UnConstructable(const UnConstructable&) = delete;
+		UnConstructable(UnConstructable&&) = delete;
+	};
 }

@@ -121,5 +121,8 @@ namespace Javelin {
 		void DrawIndexedInstanced(UINT numIndexPerInstance, UINT numInstance,
 			UINT startIndex = 0, int baseVertex = 0, UINT startInstance = 0) const;
 		void DrawAuto() const;
+
+		//‚»‚Ì‘¼
+		void ClearState() const;
 	};
 }

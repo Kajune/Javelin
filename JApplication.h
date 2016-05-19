@@ -16,7 +16,7 @@ namespace Javelin {
 	class CDepthStencil;
 	class CCubeTexture;
 
-	class Application final {
+	class Application final : private UnConstructable {
 		Application() = delete;
 		~Application() = delete;
 		Application(const Application&) = delete;
@@ -171,7 +171,7 @@ namespace Javelin {
 
 		//パイプライン関係
 		//バックバッファとフロントバッファを入れ替える、指定された回数だけ垂直同期を待機する。
-		static HRESULT Present(UINT vSyncInterval = 1);
+		static void Present(UINT vSyncInterval = 1);
 		static void ClearScreen(const COLOR& color = COLOR(),
 			bool clearDepth = true, bool clearStencil = true);
 		static void ClearScreen(const CRenderTarget* renderTarget, const CDepthStencil* depthStencil,
@@ -204,6 +204,10 @@ namespace Javelin {
 		static IDXGISwapChain* GetSwapChain() noexcept {
 			return m_device.GetSwapChain();
 		}
+		//ウィンドウハンドルを取得する。
+		static HWND GetHWnd() noexcept {
+			return m_window.GetHWnd();
+		}
 		//遅延コンテキストを取得する。
 		static std::shared_ptr<ID3D11DeviceContext> GetDeferredContext();
 
@@ -214,5 +218,11 @@ namespace Javelin {
 		}
 		//ミップマップを生成する。
 		static void GenerateMips(const CShaderResourceView& srv);
+		//ガンマ値を設定する。
+		//初期値は1.0
+		static void SetGamma(float value);
+		static void SetGamma(const COLOR& value, 
+			const COLOR& scale = COLOR(1.0f, 1.0f, 1.0f, 1.0f),
+			const COLOR& offset = COLOR(0.0f, 0.0f, 0.0f, 0.0f));
 	};
 }
