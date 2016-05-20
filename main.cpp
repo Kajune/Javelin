@@ -63,7 +63,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	//　深度バッファ
 	//
 
-	constexpr int smSize = 1024;
+	constexpr int smSize = 2048;
 	CDepthStencil dsShadow;
 	dsShadow.Initialize(smSize, smSize);
 
@@ -81,7 +81,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	UINT width, height;
 	Application::GetScreenSize(width, height);
 	CCamera cam(J_PI / 3.0f, (float)width / (float)height, 0.2f, 1000.0f);
-	CCamera camShadow(J_PI / 3.0f, 1.0f, 0.2f, 1000.0f);
+	CCamera camShadow(J_PI / 6.0f, 1.0f, 5.0f, 1000.0f);
 
 	//
 	// サンプラ設定
@@ -135,7 +135,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	pipeline.SetPixelShaderConstantBuffer(1, &cbMat);
 	pipeline.SetPixelShaderConstantBuffer(2, &cbLight);
 
-	XMFLOAT3 LightPos(2.0f, 2.0f, -2.0f);
+	XMFLOAT3 LightPos(10.0f, 10.0f, -10.0f);
 
 	cbLight_t cbLightValue;
 	cbLightValue.numLights = 1;
@@ -143,9 +143,21 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	cbLightValue.specularLight[0] = COLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	cbLightValue.diffuseLight[0] = COLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	cbLightValue.ambientLight = COLOR(0.5f, 0.5f, 0.5f, 1.0f).ary.rgba;
-	cbLightValue.lightPower = 10.0f;
+	cbLightValue.lightPower = 50.0f;
 
 	InputMouse::SetRelativeMode(true);
+
+	//
+	//　サウンド
+	//
+
+	CSound sound;
+	sound.Initialize("resource/heli.wav");
+	
+	CSound3D::Initialize(1.0f);
+
+	CSound3D sound3D;
+	SoundPlayer::PlayLoop(sound, -1, nullptr, &sound3D);
 
 	while (Application::MainLoop() == 0) {
 		Application::ClearScreen(COLOR(0.0f, 0.125f, 0.3f, 1.0f));
@@ -169,6 +181,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 		static XMVECTOR eyePos;
 
 		constexpr float speed = 0.1f;
+		XMVECTOR actualSpeed = eyePos;
 		if (InputKeyboard::IsPressed('W')) {
 			eyePos += frontVec * speed;
 		}
@@ -187,6 +200,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 		if (InputKeyboard::IsPressed(VK_LCONTROL)) {
 			eyePos -= upVec * speed;
 		}
+		actualSpeed = eyePos - actualSpeed;
 
 		XMFLOAT3 eyePosF, targetPosF;
 		XMStoreFloat3(&eyePosF, eyePos);
@@ -204,14 +218,18 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 		cbObj.UpdateBufferValue(cbObjValue, Application::GetImmediateContext());
 
 		auto mat = XMMatrixTranspose(
-			XMMatrixScaling(0.02f, 0.02f, 0.02f)
-			* XMMatrixRotationY(timeGetTime() / 1000.0f));
+			XMMatrixScaling(0.02f, 0.02f, 0.02f));
+//			* XMMatrixRotationY(timeGetTime() / 1000.0f));
 		XMStoreFloat4x4(&cbObjValue.World, mat);
 
 		cbObj.UpdateBufferValue(cbObjValue, Application::GetImmediateContext());
 
 		cbLightValue.eyePos = eyePosF;
 		cbLight.UpdateBufferValue(cbLightValue, Application::GetImmediateContext());
+
+		sound3D.SetListenerParam(eyePos, frontVec, XMLoadFloat3(&XMFLOAT3(0, 1, 0)), actualSpeed);
+		sound3D.SetEmitterParam(XMLoadFloat3(&XMFLOAT3(0, 0, 0)), XMLoadFloat3(&XMFLOAT3(0, 0, 1)));
+		CSound3D::applyVoiceAll();
 
 		//
 		// 1Pass

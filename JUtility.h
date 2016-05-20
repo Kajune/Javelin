@@ -28,4 +28,9 @@ namespace Javelin {
 	extern void Split(const std::string& str,
 		std::vector<std::string>& splitedStr,
 		char delim = ',', bool allowEmptyElement = false);
+
+	template<typename T>
+	T ceil_to_multiple(const T& value, const T& multiple) {
+		return (value + multiple - static_cast<T>(1)) / multiple * multiple;
+	}
 }

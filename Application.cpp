@@ -6,6 +6,8 @@
 #include "JDepthStencil.h"
 #include "JCubeTexture.h"
 #include "JInput.h"
+#include "JSoundPlayer.h"
+#include "JSound.h"
 
 using namespace Javelin;
 
@@ -83,6 +85,14 @@ int Application::Initialize(const std::string& appName, UINT width, UINT height,
 
 	m_pipelineList.clear();
 
+	try {
+		WriteLog("オーディオシステムの初期化");
+		SoundPlayer::Initialize();
+	} catch (...) {
+		WriteLog("オーディオシステムの初期化に失敗しました");
+		return -1;
+	}
+
 	WriteLog("アプリケーションの初期化が完了しました\n");
 
 	return 0;
@@ -92,6 +102,9 @@ int Application::MainLoop() noexcept {
 	//入力受付
 	InputKeyboard::GetKeyboardState();
 	InputMouse::GetMouseState();
+
+	//音声
+	CSound::MainLoopAll();
 
 	//デバイスチェック
 	try {
@@ -116,6 +129,8 @@ int Application::MainLoop() noexcept {
 
 void Application::Cleanup() noexcept {
 	WriteLog("平均FPSは" + std::to_string(m_averageFps) + "でした");
+	SoundPlayer::Cleanup();
+	WriteLog("オーディオシステムの解放が完了しました");
 	m_blendState.Cleanup();
 	m_depthStencilState.Cleanup();
 	m_rasterizerState.Cleanup();
