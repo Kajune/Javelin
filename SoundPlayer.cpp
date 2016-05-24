@@ -9,6 +9,7 @@ using namespace Javelin;
 IXAudio2*					SoundPlayer::m_pXAudio2 = nullptr;
 IXAudio2MasteringVoice*		SoundPlayer::m_pMasterVoice = nullptr;
 XAUDIO2_DEVICE_DETAILS		SoundPlayer::m_details;
+bool						SoundPlayer::m_isSoundAvailable = false;
 
 void SoundPlayer::Initialize() {
 #if defined(DEBUG) || defined(_DEBUG)
@@ -39,6 +40,8 @@ void SoundPlayer::Initialize() {
 		Application::WriteLog("マスタリングボイスの作成に失敗しました");
 		throw - 1;
 	}
+
+	m_isSoundAvailable = true;
 }
 
 void SoundPlayer::Cleanup() noexcept {

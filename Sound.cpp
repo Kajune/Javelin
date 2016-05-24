@@ -6,6 +6,7 @@
 #include <map>
 #include <functional>
 #include "JApplication.h"
+#include "JSoundPlayer.h"
 
 using namespace Javelin;
 
@@ -85,7 +86,7 @@ DWORD CSound::GetLoopPos() const {
 
 HRESULT CSound::play_sub(IXAudio2* audio2, const XAUDIO2_BUFFER* buffer, DWORD size, 
 						 DWORD* sizeSubmit, std::shared_ptr<CVoice>* ppVoice) const {
-	if (!operator bool()) {
+	if (!operator bool() || !SoundPlayer::IsSoundAvailable()) {
 		return (E_FAIL);
 	}
 

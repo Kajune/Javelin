@@ -16,6 +16,7 @@ namespace Javelin {
 		static IXAudio2*					m_pXAudio2;
 		static IXAudio2MasteringVoice*		m_pMasterVoice;
 		static XAUDIO2_DEVICE_DETAILS		m_details;
+		static bool							m_isSoundAvailable;
 
 		static void Initialize();
 		static void Cleanup() noexcept;
@@ -42,6 +43,10 @@ namespace Javelin {
 		//デバイスの詳細を得る
 		static const XAUDIO2_DEVICE_DETAILS& GetDetail() {
 			return m_details;
+		}
+		//サウンド機能が有効かどうかを取得する
+		static bool IsSoundAvailable() noexcept {
+			return m_isSoundAvailable;
 		}
 	};
 
