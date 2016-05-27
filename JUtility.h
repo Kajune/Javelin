@@ -29,8 +29,8 @@ namespace Javelin {
 		std::vector<std::string>& splitedStr,
 		char delim = ',', bool allowEmptyElement = false);
 
-	template<typename T>
-	T ceil_to_multiple(const T& value, const T& multiple) {
+	template<typename T, typename U>
+	T ceil_to_multiple(const T& value, const U& multiple) {
 		return (value + multiple - static_cast<T>(1)) / multiple * multiple;
 	}
 }

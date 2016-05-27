@@ -4,7 +4,7 @@
 using namespace Javelin;
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
-	if (Application::Initialize("Javelin", 800, 600, true, 32)) {
+	if (Application::Initialize("Javelin", 800, 600, true, 1)) {
 		Application::Cleanup();
 		return -1;
 	}
@@ -16,17 +16,26 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	// メッシュデータ
 	//
 
-	CMeshLoader<CObjLoader> loader;
-	loader.Initialize("resource/akagi.obj");
-	CMesh<> mesh;
-	mesh.Initialize(loader);
+	constexpr UINT kMaxModelNum = 5;
+	CMeshLoader<CObjLoader> loader[kMaxModelNum];
+	loader[0].Initialize("resource/heli/ah-64d.obj");
+//	loader[1].Initialize("resource/akagi/akagi.obj");
+//	loader[2].Initialize("resource/tank/tank.obj");
+//	loader[3].Initialize("resource/javelin/javelin.obj");
+//	loader[4].Initialize("resource/kyan/ST_Kyan.obj");
+	CMesh<> mesh[kMaxModelNum];
+	for (UINT i = 0; i < kMaxModelNum; i++) {
+		mesh[i].Initialize(loader[i]);
+	}
 	struct alloc {
 		static XMFLOAT3 Convert(const vertex_t& vertex) {
 			return vertex.position;
 		}
 	};
-	CMesh<XMFLOAT3, alloc> mesh_shadow;
-	mesh_shadow.Initialize(loader);
+	CMesh<XMFLOAT3, alloc> mesh_shadow[kMaxModelNum];
+	for (UINT i = 0; i < kMaxModelNum; i++) {
+		mesh_shadow[i].Initialize(loader[i]);
+	}
 
 	//
 	// シェーダ
@@ -57,7 +66,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	CInputLayout layoutShadow;
 	layoutShadow.Initialize(inputDescShadow, array_length(inputDescShadow), vs_shadow);
 
-	pipeline.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	//
 	//　深度バッファ
@@ -90,7 +98,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	CSamplerState sampler;
 	sampler.Initialize(D3D11_TEXTURE_ADDRESS_BORDER,
 		D3D11_FILTER_ANISOTROPIC, COLOR(1, 1, 1, 1));
-	pipeline.SetPixelShaderSamplerState(0, &sampler);
 
 	//
 	//　デフォルトテクスチャ
@@ -131,10 +138,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	cbMat.Initialize();
 	cbLight.Initialize();
 
-	pipeline.SetVertexShaderConstantBuffer(0, &cbObj);
-	pipeline.SetPixelShaderConstantBuffer(1, &cbMat);
-	pipeline.SetPixelShaderConstantBuffer(2, &cbLight);
-
 	XMFLOAT3 LightPos(10.0f, 10.0f, -10.0f);
 
 	cbLight_t cbLightValue;
@@ -174,6 +177,18 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 		viewport[i].Initialize(vp);
 	}
 
+	//
+	//　フォント
+	//
+	CFont font("", 100);
+
+	//
+	//　ブレンドステート
+	//
+	CBlendState blend;
+	blend.SetAlignmentBlend();
+	blend.ApplyChange();
+
 	while (Application::MainLoop() == 0) {
 		Application::ClearScreen(COLOR(0.0f, 0.125f, 0.3f, 1.0f));
 
@@ -199,8 +214,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 		XMVECTOR upVec = XMLoadFloat3(&XMFLOAT3(0, 1, 0));
 		upVec = XMVector3Transform(upVec, XMMatrixRotationRollPitchYaw(anglePitch, angleYaw, 0.0f));
 
-		angleYaw += InputMouse::GetRelativeMousePosX() / 500.0f;
-		anglePitch += InputMouse::GetRelativeMousePosY() / 500.0f;
+		angleYaw += (float)InputMouse::GetRelativeMousePosX() / 500.0f;
+		anglePitch += (float)InputMouse::GetRelativeMousePosY() / 500.0f;
 
 		static XMVECTOR eyePos;
 
@@ -233,6 +248,20 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 		if (InputKeyboard::IsPressed(VK_LEFT)) {
 			viewDiff -= 0.005f;
 		}
+
+		static UINT modelNum = 0;
+		for (UINT i = 0; i < kMaxModelNum; i++) {
+			if (InputKeyboard::IsKeyDown(i + 1 + '0')) {
+				modelNum = i;
+			}
+		}
+
+		pipeline.SetVertexShaderConstantBuffer(0, &cbObj);
+		pipeline.SetPixelShaderConstantBuffer(1, &cbMat);
+		pipeline.SetPixelShaderConstantBuffer(2, &cbLight);
+
+		pipeline.SetPixelShaderSamplerState(0, &sampler);
+		pipeline.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		for (UINT i = 0; i < 2; i++) {
 			Application::ClearScreen(nullptr, &dsShadow, COLOR(1.0f, 1.0f, 1.0f, 1.0f));
@@ -269,7 +298,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 			pipeline.SetRenderTarget(nullptr, &dsShadow);
 			pipeline.SetViewports(vpShadow);
 
-			for (auto it = mesh_shadow.begin(); it != mesh_shadow.end(); it++) {
+			for (auto it = mesh_shadow[modelNum].begin(); it != mesh_shadow[modelNum].end(); it++) {
 				pipeline.SetVertexBuffer(0, &it->vertex);
 				pipeline.SetIndexBuffer(&it->index, 0);
 
@@ -290,28 +319,28 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 
 			pipeline.SetPixelShaderResource(7, &dsShadow);
 
-			for (auto it = mesh.begin(); it != mesh.end(); it++) {
+			for (auto it = mesh[modelNum].begin(); it != mesh[modelNum].end(); it++) {
 				pipeline.SetVertexBuffer(0, &it->vertex);
 				pipeline.SetIndexBuffer(&it->index, 0);
 
 				cbMat_t mat;
-				mat.diffuse = mesh.GetMaterial(it).materialParam.diffuse;
-				mat.specular = mesh.GetMaterial(it).materialParam.specular;
-				mat.ambient = mesh.GetMaterial(it).materialParam.ambient;
+				mat.diffuse = mesh[modelNum].GetMaterial(it).materialParam.diffuse;
+				mat.specular = mesh[modelNum].GetMaterial(it).materialParam.specular;
+				mat.ambient = mesh[modelNum].GetMaterial(it).materialParam.ambient;
 				mat.opacity_reflection_refraction
-					= COLOR(mesh.GetMaterial(it).materialParam.opacity,
-						mesh.GetMaterial(it).materialParam.reflection,
-						mesh.GetMaterial(it).materialParam.refraction, 0.0f);
+					= COLOR(mesh[modelNum].GetMaterial(it).materialParam.opacity,
+						mesh[modelNum].GetMaterial(it).materialParam.reflection,
+						mesh[modelNum].GetMaterial(it).materialParam.refraction, 0.0f);
 				cbMat.UpdateBufferValue(mat, Application::GetImmediateContext());
 
 				pipeline.SetPixelShaderResource(0,
-					(mesh.GetMaterial(it).diffuseMap ? &mesh.GetMaterial(it).diffuseMap : &defaultWhite));
+					(mesh[modelNum].GetMaterial(it).diffuseMap ? &mesh[modelNum].GetMaterial(it).diffuseMap : &defaultWhite));
 				pipeline.SetPixelShaderResource(1,
-					(mesh.GetMaterial(it).specularMap ? &mesh.GetMaterial(it).specularMap :
-					(mesh.GetMaterial(it).diffuseMap ? &mesh.GetMaterial(it).diffuseMap : &defaultWhite)));
+					(mesh[modelNum].GetMaterial(it).specularMap ? &mesh[modelNum].GetMaterial(it).specularMap :
+					(mesh[modelNum].GetMaterial(it).diffuseMap ? &mesh[modelNum].GetMaterial(it).diffuseMap : &defaultWhite)));
 				pipeline.SetPixelShaderResource(2,
-					(mesh.GetMaterial(it).ambientMap ? &mesh.GetMaterial(it).ambientMap :
-					(mesh.GetMaterial(it).diffuseMap ? &mesh.GetMaterial(it).diffuseMap : &defaultWhite)));
+					(mesh[modelNum].GetMaterial(it).ambientMap ? &mesh[modelNum].GetMaterial(it).ambientMap :
+					(mesh[modelNum].GetMaterial(it).diffuseMap ? &mesh[modelNum].GetMaterial(it).diffuseMap : &defaultWhite)));
 
 				pipeline.DrawIndexed(it->index.GetBufferLength());
 			}
@@ -320,6 +349,11 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 		sound3D.SetListenerParam(eyePos, frontVec, XMLoadFloat3(&XMFLOAT3(0, 1, 0)), actualSpeed);
 		sound3D.SetEmitterParam(XMLoadFloat3(&XMFLOAT3(0, 0, 0)), XMLoadFloat3(&XMFLOAT3(0, 0, 1)));
 		CSound3D::applyVoiceAll();
+
+		Application::SetDefaultViewport(pipeline);
+		pipeline.SetBlendState(&blend);
+		Text::DrawString(0, 1, 0.0, "Hello, world!", font, pipeline, COLOR(1, 1, 1, 1), 0.5f, 1.0f);
+		Application::SetDefaultBlendState(pipeline);
 
 		Application::Present();
 		Application::SetWindowTitle(std::to_string(Javelin::Application::GetFPS()));

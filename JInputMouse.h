@@ -18,34 +18,34 @@ namespace Javelin {
 		static int wheelRotation;
 		static bool wheelRotated;
 		static bool relativeMode;
-		static float x, y, rx, ry, wx, wy, cx, cy;
+		static int x, y, rx, ry, wx, wy, cx, cy;
 
 		static void GetMouseState();
 		static void DoubleClicked(UINT index);
 		static void WheelRotated(int mass);
 	public:
-		static float GetMousePosX() {
+		static int GetMousePosX() {
 			return x;
 		}
-		static float GetMousePosY() {
+		static int GetMousePosY() {
 			return y;
 		}
-		static float GetRelativeMousePosX() {
+		static int GetRelativeMousePosX() {
 			return rx;
 		}
-		static float GetRelativeMousePosY() {
+		static int GetRelativeMousePosY() {
 			return ry;
 		}
-		static float GetWindowMousePosX() {
+		static int GetWindowMousePosX() {
 			return wx;
 		}
-		static float GetWindowMousePosY() {
+		static int GetWindowMousePosY() {
 			return wy;
 		}
-		static float GetClientMousePosX() {
+		static int GetClientMousePosX() {
 			return cx;
 		}
-		static float GetClientMousePosY() {
+		static int GetClientMousePosY() {
 			return cy;
 		}
 

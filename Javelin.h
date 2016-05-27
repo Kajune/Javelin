@@ -25,6 +25,7 @@
 #include "JResource.h"
 #include "JSamplerState.h"
 #include "JShader.h"
+#include "JText.h"
 #include "JTexture.h"
 #include "JUtility.h"
 #include "JVertexAndIndexBuffer.h"

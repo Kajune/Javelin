@@ -124,5 +124,8 @@ namespace Javelin {
 
 		//‚»‚Ì‘¼
 		void ClearState() const;
+		std::shared_ptr<ID3D11DeviceContext> GetDeviceContext() const {
+			return m_pDeviceContext;
+		}
 	};
 }

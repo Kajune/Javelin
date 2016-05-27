@@ -6,36 +6,36 @@ UINT InputMouse::button[3] = {0, 0, 0};
 int InputMouse::wheelRotation = 0;
 bool InputMouse::wheelRotated = false;
 bool InputMouse::relativeMode = false;
-float 
-InputMouse::x = 0.0f, InputMouse::y = 0.0f,
-InputMouse::rx = 0.0f, InputMouse::ry = 0.0f,
-InputMouse::wx = 0.0f, InputMouse::wy = 0.0f,
-InputMouse::cx = 0.0f, InputMouse::cy = 0.0f;
+int
+InputMouse::x = 0, InputMouse::y = 0,
+InputMouse::rx = 0, InputMouse::ry = 0,
+InputMouse::wx = 0, InputMouse::wy = 0,
+InputMouse::cx = 0, InputMouse::cy = 0;
 
 void InputMouse::GetMouseState() {
 	POINT point;
 	GetCursorPos(&point);
 
-	rx = (float)point.x - x;
-	ry = (float)point.y - y;
-	x = (float)point.x;
-	y = (float)point.y;
+	rx = point.x - x;
+	ry = point.y - y;
+	x = point.x;
+	y = point.y;
 
 	RECT rc;
 	GetWindowRect(Application::GetHWnd(), &rc);
 
 	if (relativeMode) {
-		x = (float)(rc.right + rc.left) / 2.0f;
-		y = (float)(rc.bottom + rc.top) / 2.0f;
-		SetCursorPos((int)x, (int)y);
+		x = (rc.right + rc.left) / 2;
+		y = (rc.bottom + rc.top) / 2;
+		SetCursorPos(x, y);
 	}
 
-	wx = x - (float)rc.left;
-	wy = y - (float)rc.right;
+	wx = x - rc.left;
+	wy = y - rc.right;
 
 	ScreenToClient(Application::GetHWnd(), &point);
-	cx = (float)point.x;
-	cy = (float)point.y;
+	cx = point.x;
+	cy = point.y;
 
 	for (auto& it : button) {
 		if (it > 0) {
