@@ -4,7 +4,7 @@
 using namespace Javelin;
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
-	if (Application::Initialize("Javelin", 800, 600, true, 1)) {
+	if (Application::Initialize("Javelin", 800, 600, true, 32)) {
 		Application::Cleanup();
 		return -1;
 	}
@@ -71,7 +71,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	//　深度バッファ
 	//
 
-	constexpr int smSize = 2048;
+	constexpr int smSize = 4096;
 	CDepthStencil dsShadow;
 	dsShadow.Initialize(smSize, smSize);
 
@@ -137,6 +137,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 	cbObj.Initialize();
 	cbMat.Initialize();
 	cbLight.Initialize();
+	pipeline.SetVertexShaderConstantBuffer(0, &cbObj);
+	pipeline.SetPixelShaderConstantBuffer(1, &cbMat);
+	pipeline.SetPixelShaderConstantBuffer(2, &cbLight);
 
 	XMFLOAT3 LightPos(10.0f, 10.0f, -10.0f);
 
@@ -256,10 +259,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 			}
 		}
 
-		pipeline.SetVertexShaderConstantBuffer(0, &cbObj);
-		pipeline.SetPixelShaderConstantBuffer(1, &cbMat);
-		pipeline.SetPixelShaderConstantBuffer(2, &cbLight);
-
 		pipeline.SetPixelShaderSamplerState(0, &sampler);
 		pipeline.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -267,7 +266,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 			Application::ClearScreen(nullptr, &dsShadow, COLOR(1.0f, 1.0f, 1.0f, 1.0f));
 
 			XMFLOAT3 eyePosF, targetPosF;
-			XMStoreFloat3(&eyePosF, eyePos - rightVec * ((float)i - 0.5f) * viewDiff);
+			XMStoreFloat3(&eyePosF, eyePos + rightVec * ((float)i - 0.5f) * viewDiff);
 			XMStoreFloat3(&targetPosF, eyePos + frontVec);
 
 			cam.SetCamPos(eyePosF);
@@ -296,7 +295,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 			pipeline.SetPixelShader(nullptr);
 
 			pipeline.SetRenderTarget(nullptr, &dsShadow);
-			pipeline.SetViewports(vpShadow);
+			pipeline.SetViewports(&vpShadow);
 
 			for (auto it = mesh_shadow[modelNum].begin(); it != mesh_shadow[modelNum].end(); it++) {
 				pipeline.SetVertexBuffer(0, &it->vertex);
@@ -315,35 +314,43 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 			pipeline.SetPixelShader(&ps);
 
 			Application::SetDefaultRenderTarget(pipeline);
-			pipeline.SetViewports(viewport[i]);
+			pipeline.SetViewports(&viewport[i]);
 
 			pipeline.SetPixelShaderResource(7, &dsShadow);
 
-			for (auto it = mesh[modelNum].begin(); it != mesh[modelNum].end(); it++) {
-				pipeline.SetVertexBuffer(0, &it->vertex);
-				pipeline.SetIndexBuffer(&it->index, 0);
+			for (int j = 0; j < 2; j++) {
+				for (auto it = mesh[modelNum].begin(); it != mesh[modelNum].end(); it++) {
+					if ((mesh[modelNum].GetMaterial(it).materialParam.opacity > 0.0f && j == 0) 
+						|| (mesh[modelNum].GetMaterial(it).materialParam.opacity <= 0.0f && j == 1)) {
+						continue;
+					}
 
-				cbMat_t mat;
-				mat.diffuse = mesh[modelNum].GetMaterial(it).materialParam.diffuse;
-				mat.specular = mesh[modelNum].GetMaterial(it).materialParam.specular;
-				mat.ambient = mesh[modelNum].GetMaterial(it).materialParam.ambient;
-				mat.opacity_reflection_refraction
-					= COLOR(mesh[modelNum].GetMaterial(it).materialParam.opacity,
-						mesh[modelNum].GetMaterial(it).materialParam.reflection,
-						mesh[modelNum].GetMaterial(it).materialParam.refraction, 0.0f);
-				cbMat.UpdateBufferValue(mat, Application::GetImmediateContext());
+					pipeline.SetVertexBuffer(0, &it->vertex);
+					pipeline.SetIndexBuffer(&it->index, 0);
 
-				pipeline.SetPixelShaderResource(0,
-					(mesh[modelNum].GetMaterial(it).diffuseMap ? &mesh[modelNum].GetMaterial(it).diffuseMap : &defaultWhite));
-				pipeline.SetPixelShaderResource(1,
-					(mesh[modelNum].GetMaterial(it).specularMap ? &mesh[modelNum].GetMaterial(it).specularMap :
-					(mesh[modelNum].GetMaterial(it).diffuseMap ? &mesh[modelNum].GetMaterial(it).diffuseMap : &defaultWhite)));
-				pipeline.SetPixelShaderResource(2,
-					(mesh[modelNum].GetMaterial(it).ambientMap ? &mesh[modelNum].GetMaterial(it).ambientMap :
-					(mesh[modelNum].GetMaterial(it).diffuseMap ? &mesh[modelNum].GetMaterial(it).diffuseMap : &defaultWhite)));
+					cbMat_t mat;
+					mat.diffuse = mesh[modelNum].GetMaterial(it).materialParam.diffuse;
+					mat.specular = mesh[modelNum].GetMaterial(it).materialParam.specular;
+					mat.ambient = mesh[modelNum].GetMaterial(it).materialParam.ambient;
+					mat.opacity_reflection_refraction
+						= COLOR(mesh[modelNum].GetMaterial(it).materialParam.opacity,
+							mesh[modelNum].GetMaterial(it).materialParam.reflection,
+							mesh[modelNum].GetMaterial(it).materialParam.refraction, 0.0f);
+					cbMat.UpdateBufferValue(mat, Application::GetImmediateContext());
 
-				pipeline.DrawIndexed(it->index.GetBufferLength());
+					pipeline.SetPixelShaderResource(0,
+						(mesh[modelNum].GetMaterial(it).diffuseMap ? &mesh[modelNum].GetMaterial(it).diffuseMap : &defaultWhite));
+					pipeline.SetPixelShaderResource(1,
+						(mesh[modelNum].GetMaterial(it).specularMap ? &mesh[modelNum].GetMaterial(it).specularMap :
+						(mesh[modelNum].GetMaterial(it).diffuseMap ? &mesh[modelNum].GetMaterial(it).diffuseMap : &defaultWhite)));
+					pipeline.SetPixelShaderResource(2,
+						(mesh[modelNum].GetMaterial(it).ambientMap ? &mesh[modelNum].GetMaterial(it).ambientMap :
+						(mesh[modelNum].GetMaterial(it).diffuseMap ? &mesh[modelNum].GetMaterial(it).diffuseMap : &defaultWhite)));
+
+					pipeline.DrawIndexed(it->index.GetBufferLength());
+				}
 			}
+
 		}
 
 		sound3D.SetListenerParam(eyePos, frontVec, XMLoadFloat3(&XMFLOAT3(0, 1, 0)), actualSpeed);
@@ -353,7 +360,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 		Application::SetDefaultViewport(pipeline);
 		pipeline.SetBlendState(&blend);
 		Text::DrawString(0, 1, 0.0, "Hello, world!", font, pipeline, COLOR(1, 1, 1, 1), 0.5f, 1.0f);
-		Application::SetDefaultBlendState(pipeline);
 
 		Application::Present();
 		Application::SetWindowTitle(std::to_string(Javelin::Application::GetFPS()));

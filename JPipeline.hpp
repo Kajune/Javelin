@@ -12,6 +12,15 @@ namespace Javelin {
 			Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
 			return;
 		}
+		if (m_store) {
+			if (m_store->vertexBuffer.find(slot) == m_store->vertexBuffer.end()) {
+				Storage::vbufferSet_t vbufferSet;
+				m_pDeviceContext->IAGetVertexBuffers(slot, 1, &vbufferSet.buffer, 
+					&vbufferSet.stride, &vbufferSet.offset);
+				m_store->vertexBuffer.emplace(slot, vbufferSet);
+				m_store->changed_vertexBuffer = true;
+			}
+		}
 
 		ID3D11Buffer* buffer[] = { pBuffer->GetBuffer() };
 		UINT strides[] = { stride == 0 ? sizeof(VertexType) : stride };
@@ -20,52 +29,59 @@ namespace Javelin {
 	}
 
 	template<typename BufferType>
-	void CPipeline::SetConstantBuffer(UINT slot,
-		const CConstantBuffer<BufferType>* pBuffer,
-		std::function<void(std::shared_ptr<ID3D11DeviceContext>, UINT, UINT, ID3D11Buffer**)> func) const {
+	void CPipeline::SetConstantBuffer(UINT ShaderType, UINT slot,
+		const CConstantBuffer<BufferType>* pBuffer) const {
 		if (!m_pDeviceContext) {
 			Application::WriteLog("パイプラインにデバイスコンテキストがセットされていません");
 			return;
 		}
-
-		ID3D11Buffer* buffer[] = { pBuffer->GetBuffer() };
-		func(m_pDeviceContext, slot, 1, buffer);
+		if (m_store) {
+			if (m_store->ShaderSet[ShaderType].ConstantBuffer.find(slot)
+				== m_store->ShaderSet[ShaderType].ConstantBuffer.end()) {
+				ID3D11Buffer* buffer;
+				GetConstantBufferFuncs[ShaderType](*m_pDeviceContext, slot, 1, &buffer);
+				m_store->ShaderSet[ShaderType].ConstantBuffer.emplace(slot, buffer);
+				m_store->ShaderSet[ShaderType].changed_ConstantBuffer = true;
+			}
+		}
+		ID3D11Buffer* buffer[] = { pBuffer ? pBuffer->GetBuffer() : nullptr };
+		SetConstantBufferFuncs[ShaderType](*m_pDeviceContext, slot, 1, buffer);
 	}
 
 	template<typename BufferType>
 	void CPipeline::SetVertexShaderConstantBuffer(UINT slot,
 		const CConstantBuffer<BufferType>* pBuffer) const {
-		SetConstantBuffer(slot, pBuffer, &ID3D11DeviceContext::VSSetConstantBuffers);
+		SetConstantBuffer(S_VERTEX, slot, pBuffer);
 	}
 
 	template<typename BufferType>
 	void CPipeline::SetHullShaderConstantBuffer(UINT slot,
 		const CConstantBuffer<BufferType>* pBuffer) const {
-		SetConstantBuffer(slot, pBuffer, &ID3D11DeviceContext::HSSetConstantBuffers);
+		SetConstantBuffer(S_HULL, slot, pBuffer);
 	}
 
 	template<typename BufferType>
 	void CPipeline::SetDomainShaderConstantBuffer(UINT slot,
 		const CConstantBuffer<BufferType>* pBuffer) const {
-		SetConstantBuffer(slot, pBuffer, &ID3D11DeviceContext::DSSetConstantBuffers);
+		SetConstantBuffer(S_DOMAIN, slot, pBuffer);
 	}
 
 	template<typename BufferType>
 	void CPipeline::SetGeometryShaderConstantBuffer(UINT slot,
 		const CConstantBuffer<BufferType>* pBuffer) const {
-		SetConstantBuffer(slot, pBuffer, &ID3D11DeviceContext::GSSetConstantBuffers);
+		SetConstantBuffer(S_GEOMETRY, slot, pBuffer);
 	}
 
 	template<typename BufferType>
 	void CPipeline::SetComputeShaderConstantBuffer(UINT slot,
 		const CConstantBuffer<BufferType>* pBuffer) const {
-		SetConstantBuffer(slot, pBuffer, &ID3D11DeviceContext::CSSetConstantBuffers);
+		SetConstantBuffer(S_COMPUTE, slot, pBuffer);
 	}
 
 	template<typename BufferType>
 	void CPipeline::SetPixelShaderConstantBuffer(UINT slot,
 		const CConstantBuffer<BufferType>* pBuffer) const {
-		SetConstantBuffer(slot, pBuffer, &ID3D11DeviceContext::PSSetConstantBuffers);
+		SetConstantBuffer(S_PIXEL, slot, pBuffer);
 	}
 
 }

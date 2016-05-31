@@ -33,8 +33,8 @@ void CInputLayout::Initialize(const D3D11_INPUT_ELEMENT_DESC* pInputElementDescs
 
 	if (Application::GetDevice()) {
 		if (FAILED(Application::GetDevice()->CreateInputLayout(pInputElementDescs,
-			numElements, vertexShader.GetBlob()->GetBufferPointer(), 
-			vertexShader.GetBlob()->GetBufferSize(), &m_pInputLayout))) {
+			numElements, vertexShader.GetBufferPointer(), 
+			vertexShader.GetBufferSize(), &m_pInputLayout))) {
 			Application::WriteLog("入力レイアウトの作成に失敗しました");
 			throw - 1;
 		}

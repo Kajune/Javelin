@@ -285,7 +285,7 @@ void Application::SetDefaultRasterizerState(const CPipeline& pipeline) {
 }
 
 void Application::SetDefaultViewport(const CPipeline& pipeline) {
-	pipeline.SetViewports(m_viewport);
+	pipeline.SetViewports(&m_viewport);
 }
 
 void Application::SetDefaultBlendState(const CPipeline& pipeline, const COLOR& blendFactor, UINT sampleMask) {

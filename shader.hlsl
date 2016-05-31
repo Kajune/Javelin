@@ -70,7 +70,8 @@ float4 PS(PS_INPUT input) : SV_TARGET{
 			* tmp2 * specularLight[i]);
 	}
 	float3 posSM = input.posShadow.xyz / input.posShadow.w;
-	return ambient * ambientMap.Sample(smp, input.texel) * float4(ambientLight, 1.0)
+	return ambient * ambientMap.Sample(smp, input.texel) 
+		* float4(ambientLight, 1.0f - opacity_reflection_refraction.x)
 		+ float4(color.xyz, 1.0f - opacity_reflection_refraction.x)
 		* (shadowMap.Sample(smp,
 			float2((1.0 + posSM.x) / 2, (1.0 - posSM.y) / 2)).x + depthBias > posSM.z ? 1.0 : 0.0);

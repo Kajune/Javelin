@@ -24,7 +24,7 @@ namespace Javelin {
 		}
 		D3D11_MAPPED_SUBRESOURCE res;
 		if (FAILED(pDeviceContext->Map(m_pBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &res))) {
-			Application::WriteLog("CDynamicVertexAndIndexBuffer::WriteBuffer 頂点バッファのロックに失敗しました");
+			Application::WriteLog("CDynamicVertexAndIndexBuffer::WriteBuffer 定数バッファのロックに失敗しました");
 			throw - 1;
 		}
 

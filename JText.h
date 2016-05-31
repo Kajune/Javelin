@@ -15,6 +15,7 @@ namespace Javelin {
 	class CFont {
 		HFONT		m_font;
 		const UINT	m_quality;
+		const UINT	m_type;
 
 	public:
 		typedef struct {
@@ -24,10 +25,10 @@ namespace Javelin {
 	private:
 		mutable std::map<WCHAR, char_t>	m_fontTextureData;
 
-		HRESULT CreateFontTexture(wchar_t ch, UINT quality = GGO_GRAY8_BITMAP) const;
+		HRESULT CreateFontTexture(wchar_t ch) const;
 	public:
 		CFont(const std::string& fontName, int fontSize, 
-			int fontWeight = 400, bool isItalic = false, UINT quality = 1);
+			int fontWeight = 400, bool isItalic = false, UINT quality = 1, UINT type = GGO_GRAY8_BITMAP);
 		const char_t& GetData(wchar_t ch) const;
 		UINT GetQuality() const noexcept {
 			return m_quality;

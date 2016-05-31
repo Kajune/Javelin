@@ -2,6 +2,7 @@
 
 #include "JResource.h"
 #include <string>
+#include <vector>
 
 namespace Javelin {
 
@@ -19,9 +20,12 @@ namespace Javelin {
 #endif
 	};
 
+	struct Precompiled {};
+
 	class CShader : public CResource {
-	protected:
 		ID3DBlob*			m_pBlob;
+		bool				m_isPrecompiled;
+		std::vector<BYTE>	m_precompiledData;
 	public:
 		CShader() noexcept;
 		virtual ~CShader() noexcept;
@@ -29,10 +33,14 @@ namespace Javelin {
 		void Initialize(const std::string& filename, const std::string& functionName,
 			const std::string& shaderModel, UINT flag,
 			const D3D10_SHADER_MACRO* pMacroDefines, LPD3D10INCLUDE pInclude);
+		void Initialize(const std::string& filename, Precompiled);
 		void Cleanup() noexcept;
 
-		ID3DBlob* GetBlob() const noexcept {
-			return m_pBlob;
+		const void* GetBufferPointer() const noexcept {
+			return (m_isPrecompiled ? m_precompiledData.data() : m_pBlob->GetBufferPointer());
+		}
+		size_t GetBufferSize() const noexcept {
+			return (m_isPrecompiled ? sizeof(BYTE) * m_precompiledData.size() : m_pBlob->GetBufferSize());
 		}
 		operator bool() const override {
 			return m_pBlob != nullptr;
@@ -49,6 +57,7 @@ namespace Javelin {
 		void Initialize(const std::string& filename, const std::string& functionName,
 			const std::string& shaderModel, UINT flag = ShaderCompileOption::RECOMMENDED, 
 			const D3D10_SHADER_MACRO* pMacroDefines = nullptr, LPD3D10INCLUDE pInclude = nullptr);
+		void Initialize(const std::string& filename, Precompiled);
 		void Cleanup() noexcept;
 
 		ID3D11VertexShader* GetShader() const noexcept {
@@ -75,6 +84,10 @@ namespace Javelin {
 			UINT strides[], UINT numStrides,
 			UINT flag = ShaderCompileOption::RECOMMENDED,
 			const D3D10_SHADER_MACRO* pMacroDefines = nullptr, LPD3D10INCLUDE pInclude = nullptr);
+		void Initialize(const std::string& filename, Precompiled);
+		void Initialize(const std::string& filename, Precompiled,
+			D3D11_SO_DECLARATION_ENTRY decl[], UINT numDecl,
+			UINT strides[], UINT numStrides);
 		void Cleanup() noexcept;
 
 		ID3D11GeometryShader* GetShader() const noexcept {
@@ -95,6 +108,7 @@ namespace Javelin {
 		void Initialize(const std::string& filename, const std::string& functionName,
 			const std::string& shaderModel, UINT flag = ShaderCompileOption::RECOMMENDED,
 			const D3D10_SHADER_MACRO* pMacroDefines = nullptr, LPD3D10INCLUDE pInclude = nullptr);
+		void Initialize(const std::string& filename, Precompiled);
 		void Cleanup() noexcept;
 
 		ID3D11PixelShader* GetShader() const noexcept {
@@ -115,6 +129,7 @@ namespace Javelin {
 		void Initialize(const std::string& filename, const std::string& functionName,
 			const std::string& shaderModel, UINT flag = ShaderCompileOption::RECOMMENDED,
 			const D3D10_SHADER_MACRO* pMacroDefines = nullptr, LPD3D10INCLUDE pInclude = nullptr);
+		void Initialize(const std::string& filename, Precompiled);
 		void Cleanup() noexcept;
 
 		ID3D11HullShader* GetShader() const noexcept {
@@ -135,6 +150,7 @@ namespace Javelin {
 		void Initialize(const std::string& filename, const std::string& functionName,
 			const std::string& shaderModel, UINT flag = ShaderCompileOption::RECOMMENDED,
 			const D3D10_SHADER_MACRO* pMacroDefines = nullptr, LPD3D10INCLUDE pInclude = nullptr);
+		void Initialize(const std::string& filename, Precompiled);
 		void Cleanup() noexcept;
 
 		ID3D11DomainShader* GetShader() const noexcept {
@@ -155,6 +171,7 @@ namespace Javelin {
 		void Initialize(const std::string& filename, const std::string& functionName,
 			const std::string& shaderModel, UINT flag = ShaderCompileOption::RECOMMENDED,
 			const D3D10_SHADER_MACRO* pMacroDefines = nullptr, LPD3D10INCLUDE pInclude = nullptr);
+		void Initialize(const std::string& filename, Precompiled);
 		void Cleanup() noexcept;
 
 		ID3D11ComputeShader* GetShader() const noexcept {

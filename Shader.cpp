@@ -1,6 +1,7 @@
 #include "JShader.h"
 #include "JApplication.h"
 #include "JUtility.h"
+#include <fstream>
 
 using namespace Javelin;
 
@@ -29,9 +30,23 @@ void CShader::Initialize(const std::string& filename, const std::string& functio
 		throw - 1;
 	}
 	SAFE_RELEASE(pErrorBlob);
+	m_isPrecompiled = false;
+}
+
+void CShader::Initialize(const std::string& filename, Precompiled) {
+	Cleanup();
+
+	std::ifstream ifs(filename, std::ios::binary);
+	char ch;
+	while (ifs.get(ch)) {
+		m_precompiledData.push_back(ch);
+	}
+
+	m_isPrecompiled = true;
 }
 
 void CShader::Cleanup() noexcept {
+	m_precompiledData.clear();
 	SAFE_RELEASE(m_pBlob);
 }
 
@@ -69,12 +84,30 @@ void CVertexShader::Initialize(const std::string& filename, const std::string& f
 	if (Application::GetDevice()) {
 		CShader::Initialize(filename, functionName, shaderModel, flag, pMacroDefines, pInclude);
 		if (FAILED(Application::GetDevice()->CreateVertexShader(
-			m_pBlob->GetBufferPointer(), m_pBlob->GetBufferSize(), nullptr, &m_pShader))) {
+			GetBufferPointer(),GetBufferSize(), nullptr, &m_pShader))) {
 			Application::WriteLog(std::string("シェーダオブジェクトの作成に失敗しました：") +
 				"\n\t" + filename + "\n\t" + functionName + "\n\t" + shaderModel);
 			throw - 1;
 		}
 	} else {
+		Application::WriteLog("デバイスが見つかりませんでした");
+		throw - 1;
+	}
+}
+
+void CVertexShader::Initialize(const std::string& filename, Precompiled) {
+	Cleanup();
+
+	if (Application::GetDevice()) {
+		CShader::Initialize(filename, Precompiled{});
+		if (FAILED(Application::GetDevice()->CreateVertexShader(
+			GetBufferPointer(), GetBufferSize(), nullptr, &m_pShader))) {
+			Application::WriteLog(std::string("シェーダオブジェクトの作成に失敗しました：") +
+				"\n\t" + filename);
+			throw - 1;
+		}
+	}
+	else {
 		Application::WriteLog("デバイスが見つかりませんでした");
 		throw - 1;
 	}
@@ -119,7 +152,7 @@ void CGeometryShader::Initialize(const std::string& filename, const std::string&
 	if (Application::GetDevice()) {
 		CShader::Initialize(filename, functionName, shaderModel, flag, pMacroDefines, pInclude);
 		if (FAILED(Application::GetDevice()->CreateGeometryShader(
-			m_pBlob->GetBufferPointer(), m_pBlob->GetBufferSize(), nullptr, &m_pShader))) {
+			GetBufferPointer(), GetBufferSize(), nullptr, &m_pShader))) {
 			Application::WriteLog(std::string("シェーダオブジェクトの作成に失敗しました：") +
 				"\n\t" + filename + "\n\t" + functionName + "\n\t" + shaderModel);
 			throw - 1;
@@ -140,7 +173,7 @@ void CGeometryShader::Initialize(const std::string& filename, const std::string&
 	if (Application::GetDevice()) {
 		CShader::Initialize(filename, functionName, shaderModel, flag, pMacroDefines, pInclude);
 		if (FAILED(Application::GetDevice()->CreateGeometryShaderWithStreamOutput(
-			m_pBlob->GetBufferPointer(), m_pBlob->GetBufferSize(),
+			GetBufferPointer(), GetBufferSize(),
 			decl, numDecl, strides, numStrides,
 			Application::GetFeatureLevel() >= D3D_FEATURE_LEVEL_11_0 ? 
 				D3D11_SO_NO_RASTERIZED_STREAM : 0, nullptr, &m_pShader))) {
@@ -149,6 +182,45 @@ void CGeometryShader::Initialize(const std::string& filename, const std::string&
 			throw - 1;
 		}
 	} else {
+		Application::WriteLog("デバイスが見つかりませんでした");
+		throw - 1;
+	}
+}
+
+void CGeometryShader::Initialize(const std::string& filename, Precompiled) {
+	Cleanup();
+
+	if (Application::GetDevice()) {
+		CShader::Initialize(filename, Precompiled{});
+		if (FAILED(Application::GetDevice()->CreateGeometryShader(
+			GetBufferPointer(), GetBufferSize(), nullptr, &m_pShader))) {
+			Application::WriteLog(std::string("シェーダオブジェクトの作成に失敗しました：") +
+				"\n\t" + filename);
+			throw - 1;
+		}
+	}
+	else {
+		Application::WriteLog("デバイスが見つかりませんでした");
+		throw - 1;
+	}
+}
+
+void CGeometryShader::Initialize(const std::string& filename, Precompiled,
+	D3D11_SO_DECLARATION_ENTRY decl[], UINT numDecl,
+	UINT strides[], UINT numStrides) {
+	if (Application::GetDevice()) {
+		CShader::Initialize(filename, Precompiled{});
+		if (FAILED(Application::GetDevice()->CreateGeometryShaderWithStreamOutput(
+			GetBufferPointer(), GetBufferSize(),
+			decl, numDecl, strides, numStrides,
+			Application::GetFeatureLevel() >= D3D_FEATURE_LEVEL_11_0 ?
+			D3D11_SO_NO_RASTERIZED_STREAM : 0, nullptr, &m_pShader))) {
+			Application::WriteLog(std::string("シェーダオブジェクトの作成に失敗しました：") +
+				"\n\t" + filename);
+			throw - 1;
+		}
+	}
+	else {
 		Application::WriteLog("デバイスが見つかりませんでした");
 		throw - 1;
 	}
@@ -193,12 +265,30 @@ void CPixelShader::Initialize(const std::string& filename, const std::string& fu
 	if (Application::GetDevice()) {
 		CShader::Initialize(filename, functionName, shaderModel, flag, pMacroDefines, pInclude);
 		if (FAILED(Application::GetDevice()->CreatePixelShader(
-			m_pBlob->GetBufferPointer(), m_pBlob->GetBufferSize(), nullptr, &m_pShader))) {
+			GetBufferPointer(), GetBufferSize(), nullptr, &m_pShader))) {
 			Application::WriteLog(std::string("シェーダオブジェクトの作成に失敗しました：") +
 				"\n\t" + filename + "\n\t" + functionName + "\n\t" + shaderModel);
 			throw - 1;
 		}
 	} else {
+		Application::WriteLog("デバイスが見つかりませんでした");
+		throw - 1;
+	}
+}
+
+void CPixelShader::Initialize(const std::string& filename, Precompiled) {
+	Cleanup();
+
+	if (Application::GetDevice()) {
+		CShader::Initialize(filename, Precompiled{});
+		if (FAILED(Application::GetDevice()->CreatePixelShader(
+			GetBufferPointer(), GetBufferSize(), nullptr, &m_pShader))) {
+			Application::WriteLog(std::string("シェーダオブジェクトの作成に失敗しました：") +
+				"\n\t" + filename);
+			throw - 1;
+		}
+	}
+	else {
 		Application::WriteLog("デバイスが見つかりませんでした");
 		throw - 1;
 	}
@@ -243,12 +333,30 @@ void CHullShader::Initialize(const std::string& filename, const std::string& fun
 	if (Application::GetDevice()) {
 		CShader::Initialize(filename, functionName, shaderModel, flag, pMacroDefines, pInclude);
 		if (FAILED(Application::GetDevice()->CreateHullShader(
-			m_pBlob->GetBufferPointer(), m_pBlob->GetBufferSize(), nullptr, &m_pShader))) {
+			GetBufferPointer(), GetBufferSize(), nullptr, &m_pShader))) {
 			Application::WriteLog(std::string("シェーダオブジェクトの作成に失敗しました：") +
 				"\n\t" + filename + "\n\t" + functionName + "\n\t" + shaderModel);
 			throw - 1;
 		}
 	} else {
+		Application::WriteLog("デバイスが見つかりませんでした");
+		throw - 1;
+	}
+}
+
+void CHullShader::Initialize(const std::string& filename, Precompiled) {
+	Cleanup();
+
+	if (Application::GetDevice()) {
+		CShader::Initialize(filename, Precompiled{});
+		if (FAILED(Application::GetDevice()->CreateHullShader(
+			GetBufferPointer(), GetBufferSize(), nullptr, &m_pShader))) {
+			Application::WriteLog(std::string("シェーダオブジェクトの作成に失敗しました：") +
+				"\n\t" + filename);
+			throw - 1;
+		}
+	}
+	else {
 		Application::WriteLog("デバイスが見つかりませんでした");
 		throw - 1;
 	}
@@ -293,12 +401,30 @@ void CDomainShader::Initialize(const std::string& filename, const std::string& f
 	if (Application::GetDevice()) {
 		CShader::Initialize(filename, functionName, shaderModel, flag, pMacroDefines, pInclude);
 		if (FAILED(Application::GetDevice()->CreateDomainShader(
-			m_pBlob->GetBufferPointer(), m_pBlob->GetBufferSize(), nullptr, &m_pShader))) {
+			GetBufferPointer(), GetBufferSize(), nullptr, &m_pShader))) {
 			Application::WriteLog(std::string("シェーダオブジェクトの作成に失敗しました：") +
 				"\n\t" + filename + "\n\t" + functionName + "\n\t" + shaderModel);
 			throw - 1;
 		}
 	} else {
+		Application::WriteLog("デバイスが見つかりませんでした");
+		throw - 1;
+	}
+}
+
+void CDomainShader::Initialize(const std::string& filename, Precompiled) {
+	Cleanup();
+
+	if (Application::GetDevice()) {
+		CShader::Initialize(filename, Precompiled{});
+		if (FAILED(Application::GetDevice()->CreateDomainShader(
+			GetBufferPointer(), GetBufferSize(), nullptr, &m_pShader))) {
+			Application::WriteLog(std::string("シェーダオブジェクトの作成に失敗しました：") +
+				"\n\t" + filename);
+			throw - 1;
+		}
+	}
+	else {
 		Application::WriteLog("デバイスが見つかりませんでした");
 		throw - 1;
 	}
@@ -343,12 +469,30 @@ void CComputeShader::Initialize(const std::string& filename, const std::string& 
 	if (Application::GetDevice()) {
 		CShader::Initialize(filename, functionName, shaderModel, flag, pMacroDefines, pInclude);
 		if (FAILED(Application::GetDevice()->CreateComputeShader(
-			m_pBlob->GetBufferPointer(), m_pBlob->GetBufferSize(), nullptr, &m_pShader))) {
+			GetBufferPointer(), GetBufferSize(), nullptr, &m_pShader))) {
 			Application::WriteLog(std::string("シェーダオブジェクトの作成に失敗しました：") +
 				"\n\t" + filename + "\n\t" + functionName + "\n\t" + shaderModel);
 			throw - 1;
 		}
 	} else {
+		Application::WriteLog("デバイスが見つかりませんでした");
+		throw - 1;
+	}
+}
+
+void CComputeShader::Initialize(const std::string& filename, Precompiled) {
+	Cleanup();
+
+	if (Application::GetDevice()) {
+		CShader::Initialize(filename, Precompiled{});
+		if (FAILED(Application::GetDevice()->CreateComputeShader(
+			GetBufferPointer(), GetBufferSize(), nullptr, &m_pShader))) {
+			Application::WriteLog(std::string("シェーダオブジェクトの作成に失敗しました：") +
+				"\n\t" + filename);
+			throw - 1;
+		}
+	}
+	else {
 		Application::WriteLog("デバイスが見つかりませんでした");
 		throw - 1;
 	}

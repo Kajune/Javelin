@@ -20,8 +20,8 @@ namespace {
 	};
 }
 
-CFont::CFont(const std::string& fontName, int fontSize, int fontWeight, bool isItalic, UINT quality):
-m_quality(quality){
+CFont::CFont(const std::string& fontName, int fontSize, int fontWeight, bool isItalic, UINT quality, UINT type):
+m_quality(quality), m_type(type){
 	LOGFONT lf;
 	lf.lfHeight = fontSize * quality;
 	lf.lfWidth = 0;
@@ -40,17 +40,20 @@ m_quality(quality){
 	m_font = CreateFontIndirect(&lf);
 }
 
-HRESULT CFont::CreateFontTexture(wchar_t ch, UINT quality) const {
+HRESULT CFont::CreateFontTexture(wchar_t ch) const {
 	HDC hdc = GetDC(nullptr);
 	HFONT oldFont = (HFONT)SelectObject(hdc, m_font);
 
 	GLYPHMETRICS GM;
 	const MAT2 mat = { {0, 1}, {0, 0}, {0, 0}, {0, 1} };
 
-	DWORD size = GetGlyphOutlineW(hdc, ch, quality, &GM, 0, nullptr, &mat);
+	DWORD size = GetGlyphOutlineW(hdc, ch, m_type, &GM, 0, nullptr, &mat);
+	if (size <= 0) {
+		size = 1;
+	}
 	std::vector<BYTE> pFontData(size);
 	std::fill(pFontData.begin(), pFontData.end(), 0);
-	GetGlyphOutlineW(hdc, ch, quality, &GM, size, pFontData.data(), &mat);
+	GetGlyphOutlineW(hdc, ch, m_type, &GM, size, pFontData.data(), &mat);
 
 	SelectObject(hdc, oldFont);
 	ReleaseDC(nullptr, hdc);
@@ -79,7 +82,7 @@ HRESULT CFont::CreateFontTexture(wchar_t ch, UINT quality) const {
 
 	std::vector<BYTE> pFontDataf;
 	for (auto& it : pFontData) {
-		pFontDataf.emplace_back(it * 255 / num_bitmaps[quality]);
+		pFontDataf.emplace_back(it * 255 / num_bitmaps[m_type]);
 	}
 
 	D3D11_SUBRESOURCE_DATA sub;
@@ -100,8 +103,13 @@ const CFont::char_t& CFont::GetData(wchar_t ch) const {
 }
 
 void Text::Initialize() {
-	m_vs.Initialize("JTextShader.hlsl", "VS", "vs_4_0");
-	m_ps.Initialize("JTextShader.hlsl", "PS", "ps_4_0");
+#if defined(_WIN64)
+	m_vs.Initialize("shader/JTextShader_VS_64.cfx", Precompiled{});
+	m_ps.Initialize("shader/JTextShader_PS_64.cfx", Precompiled{});
+#else
+	m_vs.Initialize("shader/JTextShader_VS_86.cfx", Precompiled{});
+	m_ps.Initialize("shader/JTextShader_PS_86.cfx", Precompiled{});
+#endif
 
 	m_sampler.Initialize(D3D11_TEXTURE_ADDRESS_CLAMP);
 
@@ -152,6 +160,7 @@ void Text::DrawString(float x, float y, float z, const std::string& str,
 	const CFont& font, const CPipeline& pipeline, const COLOR& color, float alignX, float alignY) {
 	std::wstring wstr(str_to_wstr(str));
 
+	pipeline.BeginStorePipeline();
 	pipeline.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	pipeline.SetInputLayout(nullptr);
 	pipeline.SetVertexShader(&m_vs);
@@ -212,4 +221,6 @@ void Text::DrawString(float x, float y, float z, const std::string& str,
 		pipeline.Draw(6);
 
 	}
+
+	pipeline.RestorePipeline();
 }
