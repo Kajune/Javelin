@@ -217,13 +217,19 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPInst, LPSTR lpC, int nC) {
 		XMVECTOR upVec = XMLoadFloat3(&XMFLOAT3(0, 1, 0));
 		upVec = XMVector3Transform(upVec, XMMatrixRotationRollPitchYaw(anglePitch, angleYaw, 0.0f));
 
-		angleYaw += (float)InputMouse::GetRelativeMousePosX() / 500.0f;
-		anglePitch += (float)InputMouse::GetRelativeMousePosY() / 500.0f;
+		angleYaw += (float)InputMouse::GetRelativeMousePosX() / 500.0f
+			+ InputPad::GetStickRX() / 50.0f;
+		anglePitch += (float)InputMouse::GetRelativeMousePosY() / 500.0f
+			+ InputPad::GetStickRY() / 50.0f;
 
 		static XMVECTOR eyePos;
 
 		constexpr float speed = 0.1f;
 		XMVECTOR actualSpeed = eyePos;
+
+		eyePos -= frontVec * speed * InputPad::GetStickLY();
+		eyePos += rightVec * speed * InputPad::GetStickLX();
+
 		if (InputKeyboard::IsPressed('W')) {
 			eyePos += frontVec * speed;
 		}

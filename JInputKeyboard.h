@@ -7,8 +7,6 @@
 namespace Javelin {
 
 	class InputKeyboard : private UnConstructable {
-		friend class Application;
-
 		static constexpr UINT kMaxKey = 0xF0;
 		typedef struct {
 			bool isPressed;
@@ -16,7 +14,6 @@ namespace Javelin {
 			int pressedTime;
 		}keyState_t;
 		static std::array<keyState_t, kMaxKey>	m_keyState;
-		static void GetKeyboardState();
 
 		static bool IsAny(std::function<bool(UINT)> cond, UINT* key) {
 			for (UINT i = 0; i < m_keyState.size(); i++) {
@@ -29,6 +26,8 @@ namespace Javelin {
 			}
 		}
 	public:
+		static void GetKeyboardState();
+
 		//key‚ª‰Ÿ‚³‚ê‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ð•Ô‚·
 		static bool IsPressed(UINT key) {
 			return key < kMaxKey && m_keyState.at(key).isPressed;

@@ -7,23 +7,23 @@
 namespace Javelin {
 
 	class InputMouse : private UnConstructable {
-		friend class Application;
-		enum BUTTONNAME : UINT {
-			LEFT = 0,
-			RIGHT,
-			MIDDLE,
-		};
-
 		static UINT button[3];
 		static int wheelRotation;
 		static bool wheelRotated;
 		static bool relativeMode;
 		static int x, y, rx, ry, wx, wy, cx, cy;
 
+	public:
+		enum BUTTONNAME : UINT {
+			LEFT = 0,
+			RIGHT,
+			MIDDLE,
+		};
+
 		static void GetMouseState();
 		static void DoubleClicked(UINT index);
 		static void WheelRotated(int mass);
-	public:
+
 		static int GetMousePosX() {
 			return x;
 		}

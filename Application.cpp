@@ -111,8 +111,7 @@ int Application::Initialize(const std::string& appName, UINT width, UINT height,
 
 int Application::MainLoop() noexcept {
 	//ì¸óÕéÛït
-	InputKeyboard::GetKeyboardState();
-	InputMouse::GetMouseState();
+	Input::GetInputState();
 
 	//âπê∫
 	CSound::MainLoopAll();
@@ -565,8 +564,6 @@ LRESULT Application::MainWndProc(HWND hWnd, UINT msg, UINT wParam, LONG lParam) 
 			break;
 		case WM_MOUSEWHEEL:
 			InputMouse::WheelRotated((short)HIWORD(wParam) / WHEEL_DELTA);
-			break;
-		case WM_DEVICECHANGE:
 			break;
 		default:
 			break;
