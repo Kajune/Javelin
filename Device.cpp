@@ -15,9 +15,9 @@ void Application::CDevice::Initialize(
 	DXGI_FORMAT format, 
 	D3D_DRIVER_TYPE driverType) {
 	D3D_FEATURE_LEVEL FeatuerLevels[] = {
-		D3D_FEATURE_LEVEL_10_0,
-		D3D_FEATURE_LEVEL_10_1,
 		D3D_FEATURE_LEVEL_11_0,
+		D3D_FEATURE_LEVEL_10_1,
+		D3D_FEATURE_LEVEL_10_0,
 	};
 
 	UINT flag = m_isSingleThreaded ? D3D11_CREATE_DEVICE_SINGLETHREADED : 0;

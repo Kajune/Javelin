@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+#include <vector>
 
 template <unsigned int SizeX, unsigned int SizeY, unsigned int SizeZ>
 class Voxel {
@@ -12,7 +13,16 @@ public:
 	Voxel(float threshould, float atten);
 	bool Move();
 
-	cell_t		m_cellList[SizeX][SizeY][SizeZ];
+	std::vector<std::vector<std::vector<cell_t>>>		m_cellList;
+	unsigned int GetSizeX() const noexcept {
+		return SizeX;
+	}
+	unsigned int GetSizeY() const noexcept {
+		return SizeY;
+	}
+	unsigned int GetSizeZ() const noexcept {
+		return SizeZ;
+	}
 };
 
 namespace {
@@ -35,6 +45,13 @@ namespace {
 template <unsigned int SizeX, unsigned int SizeY, unsigned int SizeZ>
 Voxel<SizeX, SizeY, SizeZ>::Voxel(float threshould, float atten) :
 	m_threshould(threshould), m_atten(atten) {
+	m_cellList.resize(SizeX);
+	for (auto& it : m_cellList) {
+		it.resize(SizeY);
+		for (auto& it2 : it) {
+			it2.resize(SizeZ);
+		}
+	}
 }
 
 template <unsigned int SizeX, unsigned int SizeY, unsigned int SizeZ>
@@ -94,4 +111,3 @@ bool Voxel<SizeX, SizeY, SizeZ>::Move() {
 	}
 	return isMoved;
 }
-

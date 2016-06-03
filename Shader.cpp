@@ -18,7 +18,7 @@ void CShader::Initialize(const std::string& filename, const std::string& functio
 	const D3D10_SHADER_MACRO* pMacroDefines, LPD3D10INCLUDE pInclude) {
 	Cleanup();
 
-	ID3DBlob* pErrorBlob;
+	ID3DBlob* pErrorBlob = nullptr;
 	if (FAILED(D3DX11CompileFromFile(filename.c_str(), pMacroDefines, pInclude,
 		functionName.c_str(), shaderModel.c_str(), flag, 0, nullptr, &m_pBlob, &pErrorBlob, nullptr))) {
 		Application::WriteLog(std::string("シェーダのコンパイルに失敗しました：") +

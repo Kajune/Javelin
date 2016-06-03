@@ -246,6 +246,17 @@ namespace Javelin {
 		static bool IsAnyStickUpAllPads() noexcept {
 			return checkAll(kMaxPadNum, IsAnyStickUp);
 		}
+
+		static bool IsPressedAny() noexcept {
+			return IsAnyButtonPressedAllPads() || IsAnyPovPressedAllPads() || IsAnyStickPressedAllPads();
+		}
+		static bool IsDownAny() noexcept {
+			return IsAnyButtonDownAllPads() || IsAnyPovDownAllPads() || IsAnyStickDownAllPads();
+		}
+		static bool IsUpAny() noexcept {
+			return IsAnyButtonUpAllPads() || IsAnyPovUpAllPads() || IsAnyStickUpAllPads();
+		}
+
 		//ジョイスティックが反応する閾値を0.0f~1.0fの範囲で指定する
 		//初期値は0.01
 		static void SetThreshold(float threshold, UINT padNum = 0) noexcept {
