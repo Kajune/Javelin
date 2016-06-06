@@ -305,11 +305,17 @@ void Application::ErasePipeline(const CPipeline* pipeline) {
 void Application::SetCullMode(D3D11_CULL_MODE mode) {
 	m_rasterizerState.GetRasterizerDesc().CullMode = mode;
 	m_rasterizerState.ApplyChange();
+	for (auto& it : m_pipelineList) {
+		it->OnDefaultSettingsChanged();
+	}
 }
 
 void Application::SetFillMode(D3D11_FILL_MODE mode) {
 	m_rasterizerState.GetRasterizerDesc().FillMode = mode;
 	m_rasterizerState.ApplyChange();
+	for (auto& it : m_pipelineList) {
+		it->OnDefaultSettingsChanged();
+	}
 }
 
 //

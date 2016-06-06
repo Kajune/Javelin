@@ -33,7 +33,7 @@
 
 #pragma comment( lib, "dxgi.lib" )
 
-#define J_PI XM_PI
+constexpr float J_PI = 3.14159265359f;
 
 namespace Javelin {
 	typedef union color {

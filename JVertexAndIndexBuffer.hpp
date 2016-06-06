@@ -99,7 +99,8 @@ namespace Javelin {
 				"書き込もうとしているバッファは実際に存在するバッファサイズより大きいため、超過分が読み捨てられます");
 		}
 
-		memcpy_s(res.pData, sizeof(BufferType) * m_bufferLength, src, sizeof(BufferType) * bufferLength);
+		memcpy_s(res.pData, sizeof(BufferType) * m_bufferLength, src, 
+			sizeof(BufferType) * (bufferLength > m_bufferLength ? m_bufferLength : bufferLength));
 
 		pDeviceContext->Unmap(m_pBuffer, 0);
 	}
