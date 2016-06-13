@@ -10,6 +10,7 @@
 #include "JSound.h"
 #include "JSound3D.h"
 #include "JText.h"
+#include "JGraphics3D.h"
 
 using namespace Javelin;
 
@@ -101,6 +102,14 @@ int Application::Initialize(const std::string& appName, UINT width, UINT height,
 		Text::Initialize();
 	} catch (...) {
 		WriteLog("文字列描画機能の初期化に失敗しました");
+		return -1;
+	}
+
+	try {
+		WriteLog("3D描画機能の初期化");
+		Graphics3D::Initialize();
+	} catch (...) {
+		WriteLog("3D描画機能の初期化");
 		return -1;
 	}
 

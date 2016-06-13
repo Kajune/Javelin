@@ -68,6 +68,24 @@ namespace Javelin {
 			m_changedView = true;
 		}
 
+		XMFLOAT3 GetCamPos() const noexcept {
+			XMFLOAT3 ret;
+			XMStoreFloat3(&ret, m_CamPos);
+			return ret;
+		}
+
+		XMFLOAT3 GetTargetPos() const noexcept {
+			XMFLOAT3 ret;
+			XMStoreFloat3(&ret, m_TargetPos);
+			return ret;
+		}
+
+		XMFLOAT3 GetUpVec() const noexcept {
+			XMFLOAT3 ret;
+			XMStoreFloat3(&ret, m_UpVec);
+			return ret;
+		}
+
 		XMFLOAT4X4 GetProjection() const noexcept {
 			Calc();
 			return Projection;

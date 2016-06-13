@@ -361,13 +361,13 @@ void CPipeline::SetRenderTarget(UINT numRenderTargets, ID3D11RenderTargetView* r
 	if (m_store) {
 		if (m_store->changed_RenderTarget) {
 			std::vector<ID3D11RenderTargetView*> rtvs(numRenderTargets);
-			m_pDeviceContext->OMGetRenderTargets(numRenderTargets, rtvs.data(), &m_store->DepthStencil);
+			m_pDeviceContext->OMGetRenderTargets(numRenderTargets, rtvs.data(), nullptr);
 			for (UINT i = m_store->RenderTarget.size(); i < rtvs.size(); i++) {
 				m_store->RenderTarget.push_back(rtvs.at(i));
 			}
 		} else {
 			std::vector<ID3D11RenderTargetView*> rtvs(numRenderTargets);
-			m_pDeviceContext->OMGetRenderTargets(numRenderTargets, rtvs.data(), nullptr);
+			m_pDeviceContext->OMGetRenderTargets(numRenderTargets, rtvs.data(), &m_store->DepthStencil);
 			for (UINT i = m_store->RenderTarget.size(); i < rtvs.size(); i++) {
 				m_store->RenderTarget.push_back(rtvs.at(i));
 			}

@@ -17,7 +17,7 @@ namespace Javelin {
 			CVertexBuffer<VertexType> vertex;
 			CIndexBuffer index;
 		}meshObject_t;
-		std::map<std::string, std::map<std::string, meshObject_t>>	m_object;
+		mutable std::map<std::string, std::map<std::string, meshObject_t>>	m_object;
 
 		using matIt_t = typename std::map<std::string, meshObject_t>::iterator;
 		using objIt_t = typename std::map<std::string, std::map<std::string, meshObject_t>>::iterator;
@@ -75,13 +75,13 @@ namespace Javelin {
 			}
 		};
 
-		meshIterator begin() {
+		meshIterator begin() const {
 			return meshIterator(m_object.begin(), m_object.begin()->second.begin(), m_object.end());
 		}
-		meshIterator end() {
+		meshIterator end() const {
 			return meshIterator(m_object.end(), m_object.rbegin()->second.end(), m_object.end());
 		}
-		const meshMaterial_t& GetMaterial(const meshIterator& it) {
+		const meshMaterial_t& GetMaterial(const meshIterator& it) const {
 			return m_material.at(it.GetMaterialName());
 		}
 	};

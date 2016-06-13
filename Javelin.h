@@ -11,6 +11,7 @@
 #include "JDepthStencil.h"
 #include "JDepthStencilState.h"
 #include "JGlobal.h"
+#include "JGraphics3D.h"
 #include "JImage.h"
 #include "JInput.h"
 #include "JInputLayout.h"
